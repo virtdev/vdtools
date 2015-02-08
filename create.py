@@ -20,8 +20,14 @@
 import sys
 from lib.common import create
 
+def usage():
+    print 'create.py [type] [vertex]...'
+
 if __name__ == '__main__':
     argc = len(sys.argv)
+    if argc == 2 and sys.argv[1] == '-h':
+        usage()
+        sys.exit()
     typ = None
     vertex = None
     if argc >= 2:
