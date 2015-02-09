@@ -264,5 +264,11 @@ class VDGraph(object):
     
     def get_vertex_type(self, v):
         if v.startswith('@'):
-            return v[1:]
+            typ = v[1:]
+            pair = typ.split('_')
+            length = len(pair)
+            if length == 2:
+                return pair[0]
+            elif length == 1:
+                return typ
     

@@ -72,13 +72,6 @@ class VDevFSManager(object):
         self._prepare()
     
     def _start(self):
-        names = load(self.uid, sort=True)
-        if names:
-            for n in names:
-                mode = self.synchronizer.get_mode(n)
-                if mode & VDEV_MODE_VIRT:
-                    device = VDev(mode)
-                    device.mount(self, n)
         for device in self.devices:
             device.start()
     

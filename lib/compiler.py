@@ -40,6 +40,13 @@ class VDCompiler(object):
             return
         
         for i in v:
+            if not self._graph.is_virtual_vertex(i):
+                typ = self._graph.get_vertex_type(i)
+                if not typ:
+                    log_err(self, 'invalid graph')
+                    return
+        
+        for i in v:
             if self._graph.is_virtual_vertex(i):
                 n = create(uid=self._uid)
             else:
@@ -67,7 +74,7 @@ class VDCompiler(object):
             for i in dispatchers:
                 if self._graph.is_virtual_vertex(i) and i in v:
                     set_attr(self._uid, names[i], {VDEV_ATTR_DISPATCHER:dispatchers[i]})
-    
+        
         for i in e:
             for j in e[i]:
                 if j != i:
