@@ -58,13 +58,7 @@ VDEV_OPEN = 'open'
 VDEV_CLOSE = 'close'
 
 def mount_device(uid, name, mode, freq, profile):
-    attr = {}
-    attr.update({'name':name})
-    attr.update({'mode':mode})
-    attr.update({'freq':freq})
-    attr.update({'profile':profile})
-    path = os.path.join(VDEV_FS_MOUNTPOINT, uid)
-    xattr.setxattr(path, OP_MOUNT, str(attr))
+    pass
 
 def update_device(query, uid, node, addr, name):
     query.device.put(name, {'uid':uid, 'addr':addr, 'node':node})
