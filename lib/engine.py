@@ -25,9 +25,9 @@ from fs.data import Data
 from fs.edge import Edge
 from fs.vertex import Vertex
 from threading import Thread
-from dev.lo import get_device
 from fs.manager import VDevFSManager
 from dev.interface import load_device
+from dev.lo import load_anon, get_device
 from conf.virtdev import VDEV_ENGINE_PORT
 from dev.vdev import VDEV_MODE_ANON, VDEV_MODE_VIRT, VDEV_OPEN, VDev
 from fs.attr import VDEV_ATTR_MODE, VDEV_ATTR_FREQ, VDEV_ATTR_MAPPER, VDEV_ATTR_HANDLER, VDEV_ATTR_PROFILE, VDEV_ATTR_DISPATCHER
@@ -55,6 +55,7 @@ class VDevEnginInterface(object):
         
         if not profile:
             if anon:
+                load_anon(typ)
                 dev = load_device(typ)
                 mode = dev.d_mode
                 profile = dev.d_profile

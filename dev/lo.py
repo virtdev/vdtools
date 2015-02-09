@@ -25,7 +25,6 @@ from fs.path import load
 from lib.log import log_err
 from threading import Thread
 from fs.attr import get_attr
-from vdev import VDEV_MODE_ANON
 from interface import VDevInterface
 from conf.virtdev import VDEV_LO_PORT
 
@@ -35,6 +34,16 @@ VDEV_ANON_PATH = os.path.join(os.getcwd(), 'anon')
 def get_device(typ, name):
     return '%s_%s' % (typ, name)
 
+def load_anon(typ, name=None, sock=None):
+    try:
+        module = imp.load_source(typ, os.path.join(VDEV_ANON_PATH, '%s.py' % typ.lower()))
+        if module and hasattr(module, typ):
+            anon = getattr(module, typ)
+            if anon:
+                return anon(name, sock)
+    except:
+        pass
+        
 class VDevLo(VDevInterface):
     def _get_name(self, device):
         res = device.split('_')
@@ -43,16 +52,6 @@ class VDevLo(VDevInterface):
         else:
             return (None, None)
     
-    def _load_anon(self, typ, name, sock):
-        try:
-            module = imp.load_source(typ, os.path.join(VDEV_ANON_PATH, '%s.py' % typ.lower()))
-            if module and hasattr(module, typ):
-                anon = getattr(module, typ)
-                if anon:
-                    return anon(name, sock)
-        finally:
-            pass
-    
     def _listen(self):
         while True:
             sock = self._sock.accept()[0]
@@ -60,7 +59,7 @@ class VDevLo(VDevInterface):
                 buf = stream.get(sock, anon=True)
                 typ, name = self._get_name(buf)
                 if typ and name:
-                    anon = self._load_anon(typ, name, sock)
+                    anon = load_anon(typ, name, sock)
                     if anon:
                         self._lo.update({str(anon):anon})
                     else:
@@ -88,17 +87,20 @@ class VDevLo(VDevInterface):
         self._init_listener()
     
     def _get_device(self, name):
-        mode = self.manager.synchronizer.get_mode(name)
-        if not (mode & VDEV_MODE_ANON):
-            return
+        typ = None
         profile = get_attr(self.manager.uid, name, 'profile')
         if not profile:
-            return   
-        lines = profile.split('\n')
-        for l in lines:
-            if l.startswith('type='):
-                typ = l.strip()[len('type='):]
+            return
+        try:
+            lines = profile.split('\n')
+            for l in lines:
+                if l.startswith('type='):
+                    typ = l.strip()[len('type='):]
+                    break
+            if typ != None:
                 return get_device(typ, name)
+        except:
+            pass
     
     def scan(self):
         device_list = []
