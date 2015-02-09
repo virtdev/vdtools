@@ -55,10 +55,9 @@ class VDevEnginInterface(object):
         
         if not profile:
             if anon:
-                dev = load_device(typ.upper())
+                dev = load_device(typ)
                 mode = dev.d_mode
                 profile = dev.d_profile
-                profile['type'] = typ
             elif mode & VDEV_MODE_VIRT:
                 profile = VDev().d_profile
         

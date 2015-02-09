@@ -41,7 +41,7 @@ class TimeCalc(VDevAnon):
                     self._time = 0
                     self._cnt = 0
                     if DEBUG_TIMECALC:
-                        print('Timecalc: time=%f' % t)
+                        print('TimeCalc: time=%f' % t)
                     return t
         finally:
             self._lock.release()

@@ -39,13 +39,16 @@ VDEV_DRIVER_PATH = os.path.join(os.getcwd(), 'drivers')
 import sys
 sys.path.append(os.getcwd())
 
-def load_device(device):
+def load_device(typ):
     try:
+        device = typ.upper()
         module = imp.load_source(device, os.path.join(VDEV_DRIVER_PATH, '%s.py' % device))
         if module and hasattr(module, device):
             dev = getattr(module, device)
             if dev:
-                return dev()
+                d = dev()
+                d.set_type(typ)
+                return d
     except:
         pass
             
@@ -116,7 +119,7 @@ class VDevInterface(Thread):
     
     def _mount_anon(self, sock, device, init):
         typ, name = self._get_name(device)
-        dev = load_device(typ.upper())
+        dev = load_device(typ)
         dev.mount(self.manager, name, sock=sock, init=init)
         self._devices.update({name:dev})
         return name

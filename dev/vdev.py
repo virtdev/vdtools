@@ -21,8 +21,10 @@ import os
 import ast
 import req
 import time
+import xattr
 from lib import stream
 from lib.jpg import JPG
+from fs.oper import OP_MOUNT
 from datetime import datetime
 from lib.lock import VDevLock
 from lib.log import log, log_err
@@ -56,7 +58,13 @@ VDEV_OPEN = 'open'
 VDEV_CLOSE = 'close'
 
 def mount_device(uid, name, mode, freq, profile):
-    pass
+    attr = {}
+    attr.update({'name':name})
+    attr.update({'mode':mode})
+    attr.update({'freq':freq})
+    attr.update({'profile':profile})
+    path = os.path.join(VDEV_FS_MOUNTPOINT, uid)
+    xattr.setxattr(path, OP_MOUNT, str(attr))
 
 def update_device(query, uid, node, addr, name):
     query.device.put(name, {'uid':uid, 'addr':addr, 'node':node})
@@ -85,6 +93,7 @@ class VDev(object):
         self._range = None
         self._sock = None
         self._name = None
+        self._type = None
         self._uid = None
         self._index = 0
         self._mode = mode
@@ -206,7 +215,10 @@ class VDev(object):
     
     @property
     def d_type(self):
-        return self.__class__.__name__
+        if not self._type:
+            return self.__class__.__name__
+        else:
+            return self._type
     
     @property
     def d_intv(self):
@@ -224,6 +236,9 @@ class VDev(object):
         profile.update({'index':str(self.d_index)})
         profile.update({'fields':str(self.d_fields)})
         return profile
+    
+    def set_type(self, typ):
+        self._type = typ
     
     def set_freq(self, f):
         self._freq = f
