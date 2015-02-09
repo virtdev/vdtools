@@ -116,7 +116,7 @@ class VDevInterface(Thread):
     
     def _mount_anon(self, sock, device, init):
         typ, name = self._get_name(device)
-        dev = load_device(typ)
+        dev = load_device(typ.upper())
         dev.mount(self.manager, name, sock=sock, init=init)
         self._devices.update({name:dev})
         return name
