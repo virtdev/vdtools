@@ -17,6 +17,7 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
+import time
 import sandbox
 from math import ceil
 from random import randint
@@ -30,9 +31,10 @@ from conf.virtdev import VDEV_DISPATCHER_PORT
 from dev.vdev import VDEV_MODE_FI, VDEV_MODE_FO, VDEV_MODE_PI, VDEV_MODE_PO, VDEV_MODE_REFLECT
 
 VDEV_DISPATCHER_LOG = True
+VDEV_DISPATCHER_WAIT_TIME = 0.01
 VDEV_DISPATCHER_TIMEOUT = 30000
 VDEV_DISPATCHER_QUEUE_MAX = 128
-VDEV_DISPATCHER_QUEUE_LEN = 10000
+VDEV_DISPATCHER_QUEUE_LEN = 2048
 
 class VDevDispatcherQueue(Thread):
     def __init__(self, manager):
@@ -49,17 +51,9 @@ class VDevDispatcherQueue(Thread):
             if len(self._queue) < VDEV_DISPATCHER_QUEUE_LEN:
                 self._queue.append(buf)
                 self._event.set()
-            else:
-                log_err(self, 'failed to push')
-                raise Exception(log_get(self, 'failed to push'))
+                return True
         finally:
             self._lock.release()
-    
-    def get_length(self):
-        self._lock.acquire()
-        ret = len(self._queue)
-        self._lock.release()
-        return ret
     
     def run(self):
         while True:
@@ -81,14 +75,12 @@ class VDevDispatcherQueue(Thread):
         
 class VDevDispatcher(object):
     def __init__(self, manager):
-        self._cnt = 0
         self._queue = []
         self._input = {}
         self._paths = {}
         self._output = {}
         self._hidden = {}
         self._queues = []
-        self._lock = Lock()
         self._dispatchers = {}
         self.manager = manager
         self._uid = manager.uid
@@ -107,31 +99,35 @@ class VDevDispatcher(object):
         return buf
     
     def _get_queue(self):
-        n = None
-        pos = 0
+        n = 0
         length = VDEV_DISPATCHER_QUEUE_LEN
         self._lock.acquire()
         i = randint(0, VDEV_DISPATCHER_QUEUE_MAX - 1)
         for _ in range(VDEV_DISPATCHER_QUEUE_MAX):
             l = self._queues[i].get_length()
             if l == 0:
+                length = 0
                 n = i
                 break
             elif l < length:
                 length = l
-                pos = i
+                n = i
             i += 1
             if i == VDEV_DISPATCHER_QUEUE_MAX:
                 i = 0
-        if n == None:
-            n = pos
         self._lock.release()
-        return self._queues[n]
+        if length < VDEV_DISPATCHER_QUEUE_LEN:
+            return self._queues[n]
     
     def _send(self, dest, src, buf, flags):
         self._log('send, dest=%s, src=%s' % (dest, src))
-        q = self._get_queue()
-        q.push((dest, src, buf, flags))
+        while True:
+            q = self._get_queue()
+            if not q:
+                time.sleep(VDEV_DISPATCHER_WAIT_TIME)
+            else:
+                if q.push((dest, src, buf, flags)):
+                    return
     
     def add(self, edge, output=True, hidden=False):
         src = edge[0]
