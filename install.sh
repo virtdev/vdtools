@@ -27,3 +27,4 @@ pip install xattr
 pip install psutil
 pip install RestrictedPython
 pip install pycrypto
+pip install textblob

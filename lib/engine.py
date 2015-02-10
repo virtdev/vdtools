@@ -55,8 +55,13 @@ class VDevEnginInterface(object):
         
         if not profile:
             if anon:
-                load_anon(typ)
+                if not load_anon(typ): 
+                    log_err(self, 'failed to create device, invalid device')
+                    raise Exception('failed to create device')
                 dev = load_device(typ)
+                if not dev:
+                    log_err(self, 'failed to create device, invalid device')
+                    raise Exception('failed to create device')
                 mode = dev.d_mode
                 profile = dev.d_profile
             elif mode & VDEV_MODE_VIRT:

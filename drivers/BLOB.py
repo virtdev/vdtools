@@ -1,4 +1,4 @@
-#      TIMER.py
+#      BLOB.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -19,6 +19,6 @@
 
 from dev.vdev import VDev, VDEV_MODE_VISI, VDEV_MODE_IN, VDEV_MODE_ANON
 
-class TIMER(VDev):
+class BLOB(VDev):
     def __init__(self):
-        VDev.__init__(self, VDEV_MODE_IN | VDEV_MODE_VISI | VDEV_MODE_ANON, Timer='str', Name='str', File='*')
+        VDev.__init__(self, VDEV_MODE_IN | VDEV_MODE_VISI | VDEV_MODE_ANON, Timer='str', Name='str', Polarity='float', Subjectivity='float')

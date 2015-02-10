@@ -1,4 +1,4 @@
-#      IMAGELOADER.py
+#      FILELOADER.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -19,7 +19,7 @@
 
 from dev.vdev import VDev, VDEV_MODE_VISI, VDEV_MODE_OUT, VDEV_MODE_POLL, VDEV_MODE_ANON, VDEV_MODE_SWITCH
 
-class IMAGELOADER(VDev):
+class FILELOADER(VDev):
     def __init__(self):
-        VDev.__init__(self, VDEV_MODE_OUT | VDEV_MODE_VISI | VDEV_MODE_POLL | VDEV_MODE_ANON | VDEV_MODE_SWITCH, Name='str', Image='*')
+        VDev.__init__(self, VDEV_MODE_OUT | VDEV_MODE_VISI | VDEV_MODE_POLL | VDEV_MODE_ANON | VDEV_MODE_SWITCH, Name='str', File='*')
         self.set_freq(1)

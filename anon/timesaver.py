@@ -43,7 +43,7 @@ class TimeSaver(VDevAnon):
             d.close()
     
     def put(self, buf):
-        args = self._get_args(buf)
+        args = self.get_args(buf)
         if args and type(args) == dict:
             name = args.get('Name')
             timer = args.get('Timer')
