@@ -17,13 +17,13 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-from dev.lo import VDevLo
+from lo import VDevLo
 from threading import Thread
 from proc.sandbox import VDevSandbox
 from proc.synchronizer import VDevSynchronizer
 from conf.virtdev import VDEV_MAPPER_PORT, VDEV_HANDLER_PORT, VDEV_DISPATCHER_PORT, VDEV_DEFAULT_UID
 
-class VDevFSManager(object):
+class VDevManager(object):
     def _init_sandbox(self):
         self._mapper = VDevSandbox(VDEV_MAPPER_PORT)
         self._handler = VDevSandbox(VDEV_HANDLER_PORT)

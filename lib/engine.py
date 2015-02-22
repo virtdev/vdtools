@@ -25,7 +25,7 @@ from fs.data import Data
 from fs.edge import Edge
 from fs.vertex import Vertex
 from threading import Thread
-from fs.manager import VDevFSManager
+from dev.manager import VDevManager
 from dev.interface import load_device
 from dev.lo import load_anon, get_device
 from conf.virtdev import VDEV_ENGINE_PORT
@@ -96,7 +96,7 @@ class VDevEnginInterface(object):
 class VDevEngine(Thread):
     def __init__(self):
         Thread.__init__(self)
-        self.manager = VDevFSManager()
+        self.manager = VDevManager()
     
     def run(self):
         srv = zerorpc.Server(VDevEnginInterface(self.manager))
