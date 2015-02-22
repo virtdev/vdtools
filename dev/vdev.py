@@ -21,12 +21,10 @@ import os
 import ast
 import req
 import time
-import xattr
 from lib import stream
 from lib.jpg import JPG
-from fs.oper import OP_MOUNT
+from lib.util import lock
 from datetime import datetime
-from lib.lock import VDevLock
 from lib.log import log, log_err
 from threading import Thread, Event, Lock
 from conf.virtdev import VDEV_FS_MOUNTPOINT
@@ -64,17 +62,6 @@ def update_device(query, uid, node, addr, name):
     query.member.remove(uid, (name,))
     query.member.put(uid, (name, node))
 
-def excl(func):
-    def _excl(*args, **kwargs):
-        self = args[0]
-        name = args[1]
-        lock = self._lock.acquire(name)
-        try:
-            return func(*args, **kwargs)
-        finally:
-            lock.release()
-    return _excl
-
 class VDev(object):
     def __init__(self, mode=0, **fields):
         self._buf = {}
@@ -90,10 +77,9 @@ class VDev(object):
         self._uid = None
         self._index = 0
         self._mode = mode
-        self._wrlock = Lock()
+        self._lock = Lock()
         self._fields = fields
         self._freq = VDEV_FREQ
-        self._lock = VDevLock()
         self._thread_poll = None
         self._thread_listen = None
         self._anon = mode & VDEV_MODE_ANON
@@ -132,16 +118,13 @@ class VDev(object):
     
     def _write(self, buf):
         if not buf:
-            log_err(self, 'failed to write, invalid request')
+            log_err(self, 'failed to write, empty buf')
             return
-        self._wrlock.acquire()
         try:
             stream.put(self._sock, buf, self._anon)
             return True
         except:
             log_err(self, 'failed to write')
-        finally:
-            self._wrlock.release()
     
     def _mount(self):
         path = self._get_path()
@@ -155,6 +138,7 @@ class VDev(object):
             profile = self.d_profile
         mount_device(self._uid, self.d_name, mode, freq, profile)
     
+    @lock
     def _check_device(self, device):
         if device.check_atime():
             index = device.d_index
@@ -330,7 +314,7 @@ class VDev(object):
         del self._event[name]
         return buf
     
-    @excl
+    @lock
     def proc(self, name, op, buf=None):
         dev = self.find(name)
         if not dev:

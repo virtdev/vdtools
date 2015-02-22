@@ -17,35 +17,11 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-from fs.path import load
 from dev.lo import VDevLo
 from threading import Thread
 from proc.sandbox import VDevSandbox
-from dev.vdev import VDev, VDEV_MODE_VIRT
 from proc.synchronizer import VDevSynchronizer
 from conf.virtdev import VDEV_MAPPER_PORT, VDEV_HANDLER_PORT, VDEV_DISPATCHER_PORT, VDEV_DEFAULT_UID
-
-def excl(func):
-    def _excl(*args, **kwargs):
-        self = args[0]
-        self._lock.acquire()
-        try:
-            return func(*args, **kwargs)
-        finally:
-            self._lock.release()
-    return _excl
-
-def excl_name(func):
-    def _excl_name(*args, **kwargs):
-        self = args[0]
-        name = args[1]
-        lock = self._lock.acquire(name)
-        try:
-            return func(*args, **kwargs)
-        finally:
-            lock.release()
-    return _excl_name
-
 
 class VDevFSManager(object):
     def _init_sandbox(self):
