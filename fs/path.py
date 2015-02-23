@@ -18,7 +18,7 @@
 #      MA 02110-1301, USA.
 
 import os
-from conf.virtdev import VDEV_FS_MOUNTPOINT
+from conf.virtdev import VDEV_FS_MOUNTPOINT, VDEV_FS_PATH
 
 VDEV_FS_LABELS = {'vertex':'vertex', 'edge':'edge', 'data':'data', 'attr':'attr', 'temp':'temp'}
 
@@ -26,13 +26,17 @@ def is_local(uid, name):
     path = os.path.join(VDEV_FS_MOUNTPOINT, uid, 'data', name)
     return os.path.exists(path)
 
-def load(uid, name='', label='data', sort=False):
+def load(uid, name='', label='data', sort=False, passthrough=False):
+    if not passthrough:
+        root = VDEV_FS_MOUNTPOINT
+    else:
+        root = VDEV_FS_PATH
     if not name and not label:
-        path = os.path.join(VDEV_FS_MOUNTPOINT, uid)
+        path = os.path.join(root, uid)
     else:
         if label not in VDEV_FS_LABELS.keys():
             return
-        path = os.path.join(VDEV_FS_MOUNTPOINT, uid, VDEV_FS_LABELS[label], name)
+        path = os.path.join(root, uid, VDEV_FS_LABELS[label], name)
     if not os.path.exists(path):
         return
     if not sort:
@@ -40,4 +44,3 @@ def load(uid, name='', label='data', sort=False):
     else:
         key = lambda f: os.stat(os.path.join(path, f)).st_mtime
         return sorted(os.listdir(path), key=key)
-
