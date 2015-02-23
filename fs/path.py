@@ -26,7 +26,7 @@ def is_local(uid, name):
     path = os.path.join(VDEV_FS_MOUNTPOINT, uid, 'data', name)
     return os.path.exists(path)
 
-def load(uid, name='', label='data', sort=False, passthrough=False):
+def load(uid, name='', label=VDEV_FS_LABELS['data'], sort=False, passthrough=False):
     if not passthrough:
         root = VDEV_FS_MOUNTPOINT
     else:
