@@ -18,16 +18,16 @@
 #      MA 02110-1301, USA.
 
 import os
-from path import VDEV_FS_LABELS
-from conf.virtdev import VDEV_FS_PATH
+from path import DOMAIN
+from conf.virtdev import FS_PATH
 
 class Data(object):
     def _get_path(self, uid, name, label):
-        return str(os.path.join(VDEV_FS_PATH, uid, label, name))
+        return str(os.path.join(FS_PATH, uid, label, name))
     
     def initialize(self, uid, name):
-        for i in VDEV_FS_LABELS:
-            path = self._get_path(uid, name, VDEV_FS_LABELS[i])
+        for i in DOMAIN:
+            path = self._get_path(uid, name, DOMAIN[i])
             if not os.path.exists(path):
                 os.makedirs(path, 0o755)
     

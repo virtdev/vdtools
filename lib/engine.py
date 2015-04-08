@@ -23,14 +23,16 @@ from util import zmqaddr
 from fs.attr import Attr
 from fs.data import Data
 from fs.edge import Edge
+from lib.op import OP_OPEN
+from dev.udo import VDevUDO
 from fs.vertex import Vertex
 from threading import Thread
+from dev.lo import get_device
+from lib.util import load_driver
 from dev.manager import VDevManager
-from dev.interface import load_device
-from dev.lo import load_anon, get_device
-from conf.virtdev import VDEV_ENGINE_PORT
-from dev.vdev import VDEV_MODE_ANON, VDEV_MODE_VIRT, VDEV_OPEN, VDev
-from fs.attr import VDEV_ATTR_MODE, VDEV_ATTR_FREQ, VDEV_ATTR_MAPPER, VDEV_ATTR_HANDLER, VDEV_ATTR_PROFILE, VDEV_ATTR_DISPATCHER
+from conf.virtdev import ENGINE_PORT
+from lib.mode import MODE_LO, MODE_VIRT
+from fs.attr import ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PROFILE, ATTR_DISPATCHER
 
 class VDevEnginInterface(object):
     def __init__(self, manager):
@@ -45,52 +47,50 @@ class VDevEnginInterface(object):
         for d in self.manager.devices:
             dev = d.find(name)
             if dev:
-                dev.proc(name, VDEV_OPEN)
+                dev.proc(name, OP_OPEN)
     
-    def create(self, uid, name, mode, vertex, freq, profile, handler, mapper, dispatcher, typ, parent):
-        anon = mode & VDEV_MODE_ANON
-        if anon and not typ:
+    def create(self, uid, name, mode, vertex, parent, freq, prof, hndl, filt, disp, typ):
+        lo = mode & MODE_LO
+        if lo and not typ:
             log_err(self, 'failed to create device, invalid device')
             raise Exception('ailed to create device')
         
-        if not profile:
-            if anon:
-                if not load_anon(typ): 
-                    log_err(self, 'failed to create device, invalid device')
+        if not prof:
+            if lo:
+                driver = load_driver(typ)
+                if not driver:
+                    log_err(self, 'failed to create device')
                     raise Exception('failed to create device')
-                dev = load_device(typ)
-                if not dev:
-                    log_err(self, 'failed to create device, invalid device')
-                    raise Exception('failed to create device')
-                mode = dev.d_mode
-                profile = dev.d_profile
-            elif mode & VDEV_MODE_VIRT:
-                profile = VDev().d_profile
+                mode = driver.mode
+                freq = driver.freq
+                prof = driver.profile
+            elif mode & MODE_VIRT:
+                prof = VDevUDO().d_profile
         
         self._data.initialize(uid, name)
-        self._attr.initialize(uid, name, {VDEV_ATTR_MODE:mode})
+        self._attr.initialize(uid, name, {ATTR_MODE:mode})
         
         if freq:
-            self._attr.initialize(uid, name, {VDEV_ATTR_FREQ:freq})
+            self._attr.initialize(uid, name, {ATTR_FREQ:freq})
         
-        if mapper:
-            self._attr.initialize(uid, name, {VDEV_ATTR_MAPPER:mapper})
+        if filt:
+            self._attr.initialize(uid, name, {ATTR_FILTER:filt})
         
-        if handler:
-            self._attr.initialize(uid, name, {VDEV_ATTR_HANDLER:handler})
+        if hndl:
+            self._attr.initialize(uid, name, {ATTR_HANDLER:hndl})
         
-        if profile:
-            self._attr.initialize(uid, name, {VDEV_ATTR_PROFILE:profile})
+        if prof:
+            self._attr.initialize(uid, name, {ATTR_PROFILE:prof})
         
-        if dispatcher:
-            self._attr.initialize(uid, name, {VDEV_ATTR_DISPATCHER:dispatcher})
+        if disp:
+            self._attr.initialize(uid, name, {ATTR_DISPATCHER:disp})
         
         if vertex:
             self._vertex.initialize(uid, name, vertex)
             for v in vertex:
                 self._edge.initialize(uid, (v, name), hidden=True)
         
-        if anon:
+        if lo:
             self.manager.lo.register(get_device(typ, name), init=False)
 
 class VDevEngine(Thread):
@@ -100,5 +100,5 @@ class VDevEngine(Thread):
     
     def run(self):
         srv = zerorpc.Server(VDevEnginInterface(self.manager))
-        srv.bind(zmqaddr('127.0.0.1', VDEV_ENGINE_PORT))
+        srv.bind(zmqaddr('127.0.0.1', ENGINE_PORT))
         srv.run()

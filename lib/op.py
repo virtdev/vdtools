@@ -1,4 +1,4 @@
-#      vdtool.py
+#      op.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,5 +17,21 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-DEBUG = True
-LOG_ERR = True
+OP_GET = 'get'
+OP_PUT = 'put'
+OP_ADD  = 'add'
+OP_OPEN = 'open'
+OP_LOAD = 'load'
+OP_JOIN = 'join'
+OP_POLL = 'poll'
+OP_SYNC = 'sync'
+OP_DIFF = 'diff'
+OP_MOUNT = 'mount'
+OP_TOUCH = 'touch'
+OP_CLOSE = 'close'
+OP_ACCEPT = 'accept'
+OP_ENABLE = 'enable'
+OP_CREATE = 'create'
+OP_DISABLE = 'disable'
+OP_COMBINE = 'combine'
+OP_INVALIDATE = 'invalidate'

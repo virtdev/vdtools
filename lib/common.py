@@ -22,9 +22,8 @@ import uuid
 import zerorpc
 from fs import edge
 from lib.util import zmqaddr
-from fs.path import VDEV_FS_MOUNTPOINT
-from conf.virtdev import VDEV_ENGINE_PORT, VDEV_DEFAULT_UID
-from dev.vdev import VDEV_MODE_VIRT, VDEV_MODE_VISI, VDEV_MODE_ANON
+from lib.mode import MODE_VIRT, MODE_VISI, MODE_LO
+from conf.virtdev import MOUNTPOINT, ENGINE_PORT, DEFAULT_UID
 
 def check_uuid(identity):
     try:
@@ -32,35 +31,29 @@ def check_uuid(identity):
     except:
         return
         
-def create(typ=None, vertex=None, uid=VDEV_DEFAULT_UID): 
+def create(typ=None, uid=DEFAULT_UID): 
     if not typ:
-        mode = VDEV_MODE_VIRT
+        mode = MODE_VIRT
     else:
-        mode = VDEV_MODE_ANON
+        mode = MODE_LO
     
     name = uuid.uuid4().hex
-    mode |= VDEV_MODE_VISI
-    if vertex:
-        if type(vertex) != list:
-            raise Exception('failed to create device')
-        for i in vertex:
-            if not check_uuid(i):
-                raise Exception('failed to create device')
-    if uid == VDEV_DEFAULT_UID:
+    mode |= MODE_VISI
+    if uid == DEFAULT_UID:
         cli = zerorpc.Client()
-        cli.connect(zmqaddr('127.0.0.1', VDEV_ENGINE_PORT))
-        cli.create(uid, name, mode, vertex, None, None, None, None, None, typ, None)
+        cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+        cli.create(uid, name, mode, None, None, None, None, None, None, None, typ)
         cli.close()
     return name
 
-def enable(name, uid=VDEV_DEFAULT_UID):
-    if uid == VDEV_DEFAULT_UID:
+def enable(name, uid=DEFAULT_UID):
+    if uid == DEFAULT_UID:
         cli = zerorpc.Client()
-        cli.connect(zmqaddr('127.0.0.1', VDEV_ENGINE_PORT))
+        cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
         cli.enable(name)
         cli.close()
 
-def connect(src, dest, uid=VDEV_DEFAULT_UID):
+def associate(src, dest, uid=DEFAULT_UID):
     if not check_uuid(src) or not check_uuid(dest):
         print 'invalid identity'
         return False
@@ -71,4 +64,4 @@ def connect(src, dest, uid=VDEV_DEFAULT_UID):
         return True
 
 def clear():
-    os.system('rm -rf %s' % VDEV_FS_MOUNTPOINT)
+    os.system('rm -rf %s' % MOUNTPOINT)

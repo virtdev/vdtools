@@ -21,18 +21,13 @@ import sys
 from lib.common import create
 
 def usage():
-    print 'create.py [type] [vertex]...'
+    print 'create.py type'
 
 if __name__ == '__main__':
     argc = len(sys.argv)
-    if argc == 2 and sys.argv[1] == '-h':
+    if argc != 2:
         usage()
         sys.exit()
-    typ = None
-    vertex = None
-    if argc >= 2:
-        typ = sys.argv[1]
-    if argc > 2:
-        vertex = sys.argv[2:]
-    name = create(typ, vertex)
+    typ = sys.argv[1]
+    name = create(typ)
     print 'create: name=' + name

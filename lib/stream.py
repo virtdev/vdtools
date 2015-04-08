@@ -36,8 +36,8 @@ def _check(buf):
     if crc.encode(tmp) == struct.unpack('H', buf[0:crc.CRC_SIZE])[0]:
         return tmp
 
-def put(sock, buf, anon=False):
-    if anon:
+def put(sock, buf, local=False):
+    if local:
         send_pkt(sock, buf)
         return
     code = crc.encode(buf)
@@ -48,8 +48,8 @@ def put(sock, buf, anon=False):
     out += STREAM_TAIL
     sock.send(out)
 
-def get(sock, anon=False):
-    if anon:
+def get(sock, local=False):
+    if local:
         return recv_pkt(sock)
     buf = ''
     start = False

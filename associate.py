@@ -1,4 +1,4 @@
-#      vdtool.py
+#      associate.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,5 +17,17 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-DEBUG = True
-LOG_ERR = True
+import sys
+from lib.common import associate
+
+def usage():
+    print 'connect.py src dest'
+
+if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        usage()
+        sys.exit()
+    src = sys.argv[1]
+    dest = sys.argv[2]
+    ret = associate(src, dest)
+    print 'connect: src=%s, dest=%s, ret=%s' % (src, dest, str(ret))

@@ -18,25 +18,25 @@
 #      MA 02110-1301, USA.
 
 import os
-from conf.virtdev import VDEV_FS_MOUNTPOINT, VDEV_FS_PATH
+from conf.virtdev import MOUNTPOINT, FS_PATH
 
-VDEV_FS_LABELS = {'vertex':'vertex', 'edge':'edge', 'data':'data', 'attr':'attr', 'temp':'temp'}
+DOMAIN = {'vertex':'vertex', 'edge':'edge', 'data':'data', 'attr':'attr', 'temp':'temp'}
 
 def is_local(uid, name):
-    path = os.path.join(VDEV_FS_MOUNTPOINT, uid, 'data', name)
+    path = os.path.join(FS_PATH, uid, DOMAIN['attr'], name)
     return os.path.exists(path)
 
-def load(uid, name='', label=VDEV_FS_LABELS['data'], sort=False, passthrough=False):
+def load(uid, name='', domain=DOMAIN['data'], sort=False, passthrough=False):
     if not passthrough:
-        root = VDEV_FS_MOUNTPOINT
+        root = MOUNTPOINT
     else:
-        root = VDEV_FS_PATH
-    if not name and not label:
+        root = FS_PATH
+    if not name and not domain:
         path = os.path.join(root, uid)
     else:
-        if label not in VDEV_FS_LABELS.keys():
+        if domain not in DOMAIN.keys():
             return
-        path = os.path.join(root, uid, VDEV_FS_LABELS[label], name)
+        path = os.path.join(root, uid, DOMAIN[domain], name)
     if not os.path.exists(path):
         return
     if not sort:

@@ -18,42 +18,20 @@
 #      MA 02110-1301, USA.
 
 import os
-import uuid
+import imp
 import struct
-from netifaces import interfaces, ifaddresses, AF_INET
-
-import sys
-sys.path.append('..')
-from conf.virtdev import VDEV_IFNAME
 
 UID_SIZE = 32
-TOKEN_SIZE = 32
-PASSWORD_SIZE = 32
-USERNAME_SIZE = UID_SIZE
-
 DEFAULT_UID = '0' * UID_SIZE
-DEFAULT_TOKEN = '1' * TOKEN_SIZE
-DEFAULT_NAME = '__anon__'
+DEVNULL = open(os.devnull, 'wb')
 
 DIR_MODE = 0o755
 FILE_MODE = 0o644
-VDEV_FLAG_SPECIAL = 0x0001
 
 _default_addr = None
 
 def zmqaddr(addr, port):
     return 'tcp://%s:%d' % (str(addr), int(port))
-
-def ifaddr(ifname=VDEV_IFNAME):
-    global _default_addr
-    if ifname == VDEV_IFNAME and _default_addr:
-        return _default_addr
-    else:
-        iface = ifaddresses(ifname)[AF_INET][0]
-        addr = iface['addr']
-        if ifname == VDEV_IFNAME:
-            _default_addr = addr
-        return addr
 
 def hash_name(name):
     length = len(name)
@@ -64,30 +42,6 @@ def hash_name(name):
     else:
         return 0
 
-def maskaddr(ifname):
-    iface = ifaddresses(ifname)[AF_INET][0]
-    address = iface['addr']
-    addr = address.split('.')
-    netmask = iface['netmask']
-    mask = netmask.split('.')
-    res = ''
-    for i in range(len(addr) - 1):
-        if mask[i] == '255':
-            res += addr[i] + '.'
-        else:
-            break
-    return res
-
-def ifaces():
-    f = lambda x:x != 'lo' and ifaddresses(x).has_key(AF_INET)
-    return filter(f, interfaces())
-
-def netaddresses(mask=False):
-    if not mask:
-        return map(ifaddr, ifaces())
-    else:
-        return map(maskaddr, ifaces())
-
 def service_start(*args):
     for srv in args:
         srv.start()
@@ -96,22 +50,11 @@ def service_join(*args):
     for srv in args:
         srv.join()
 
-def val2pair(val):
-    res = str(val).split(':')
-    length = len(res)
-    if length > 2:
-        raise Exception('val2pair failed')
-    elif length == 2:
-        return (res[0], res[1])
-    else:
-        return (res[0], '')
-
 def send_pkt(sock, buf):
     head = struct.pack('I', len(buf))
+    sock.sendall(head)
     if buf:
-        sock.sendall(head + buf)
-    else:
-        sock.sendall(head)
+        sock.sendall(buf)
 
 def _recv(sock, length):
     ret = []
@@ -134,32 +77,6 @@ def close_port(port):
     cmd = 'lsof -i:%d -Fp | cut -c2- | xargs --no-run-if-empty kill -9' % port
     os.system(cmd)
 
-def get_node():
-    return '%x' % uuid.getnode()
-
-def get_name(ns, parent, child=''):
-    return uuid.uuid5(uuid.UUID(ns), os.path.join(parent, child)).hex
-
-def vdev_name(uid, node=None):
-    if node:
-        if type(node) == str or type(node) == unicode:
-            node = int(node, 16)
-    else:
-        node = uuid.getnode()
-    ns = '%032x' % node
-    return get_name(ns, str(uid), 'vdev')
-
-def split(s):
-    return str(s).split(":")
-
-def cat(*items):
-    ret = ''
-    if len(items):
-        ret = str(items[0])
-        for i in range(1, len(items)):
-            ret += ':%s' % str(items[i])
-    return ret
-
 def lock(func):
     def _lock(*args, **kwargs):
         self = args[0]
@@ -181,3 +98,17 @@ def named_lock(func):
             self._lock.release(name)
     return _named_lock
 
+def mount_device(uid, name, mode, freq, prof):
+    pass
+
+DRIVER_PATH = os.path.join(os.getcwd(), 'drivers')
+
+def load_driver(typ, name=None, sock=None):
+    try:
+        module = imp.load_source(typ, os.path.join(DRIVER_PATH, '%s.py' % typ.lower()))
+        if module and hasattr(module, typ):
+            driver = getattr(module, typ)
+            if driver:
+                return driver(name, sock)
+    except:
+        pass

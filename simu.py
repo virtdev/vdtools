@@ -1,4 +1,4 @@
-#      vdtool.py
+#      simu.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,5 +17,17 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-DEBUG = True
-LOG_ERR = True
+import sys
+from lib.parser import VDParser
+
+def usage():
+    print 'simu.py path'
+    
+if __name__ == '__main__':
+    argc = len(sys.argv)
+    if argc != 2:
+        usage()
+        sys.exit()
+    parser = VDParser()
+    ret = parser.parse(sys.argv[1])
+    print 'simu: ret=%s' % str(ret)

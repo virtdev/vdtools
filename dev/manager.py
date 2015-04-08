@@ -21,31 +21,34 @@ from lo import VDevLo
 from threading import Thread
 from proc.sandbox import VDevSandbox
 from proc.synchronizer import VDevSynchronizer
-from conf.virtdev import VDEV_MAPPER_PORT, VDEV_HANDLER_PORT, VDEV_DISPATCHER_PORT, VDEV_DEFAULT_UID
+from conf.virtdev import FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, DEFAULT_UID
 
 class VDevManager(object):
     def _init_sandbox(self):
-        self._mapper = VDevSandbox(VDEV_MAPPER_PORT)
-        self._handler = VDevSandbox(VDEV_HANDLER_PORT)
-        self._dispatcher = VDevSandbox(VDEV_DISPATCHER_PORT)
-        self._mapper.start()
+        self._filter = VDevSandbox(FILTER_PORT)
+        self._handler = VDevSandbox(HANDLER_PORT)
+        self._dispatcher = VDevSandbox(DISPATCHER_PORT)
+        self._filter.start()
         self._handler.start()
         self._dispatcher.start()
     
-    def _prepare(self):
+    def _init_dev(self):
         self.devices = []
-        self._mapper = None
-        self._handler = None
-        self._dispatcher = None
         self.lo = VDevLo(self)
-        self._init_sandbox()
         self.devices.append(self.lo)
+    
+    def _init_synchronizer(self):
         self.synchronizer = VDevSynchronizer(self)
-        
+    
+    def _initialize(self):
+        self._init_sandbox()
+        self._init_synchronizer()
+        self._init_dev()
+    
     def __init__(self):
-        self.uid = VDEV_DEFAULT_UID
+        self.uid = DEFAULT_UID
         self._active = False
-        self._prepare()
+        self._initialize()
     
     def _start(self):
         for device in self.devices:

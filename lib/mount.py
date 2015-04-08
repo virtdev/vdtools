@@ -20,17 +20,17 @@
 import os
 from lib.util import close_port
 from lib.engine import VDevEngine
-from conf.virtdev import VDEV_LO_PORT, VDEV_MAPPER_PORT, VDEV_HANDLER_PORT, VDEV_DISPATCHER_PORT, VDEV_FS_MOUNTPOINT
+from conf.virtdev import LO_PORT, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, MOUNTPOINT
 
 def _clean():
-    close_port(VDEV_LO_PORT)
-    close_port(VDEV_MAPPER_PORT)
-    close_port(VDEV_HANDLER_PORT)
-    close_port(VDEV_DISPATCHER_PORT)
+    close_port(LO_PORT)
+    close_port(FILTER_PORT)
+    close_port(HANDLER_PORT)
+    close_port(DISPATCHER_PORT)
 
 def mount():
-    if not os.path.exists(VDEV_FS_MOUNTPOINT):
-        os.makedirs(VDEV_FS_MOUNTPOINT, 0o755)
+    if not os.path.exists(MOUNTPOINT):
+        os.makedirs(MOUNTPOINT, 0o755)
     _clean()
     engine = VDevEngine()
     engine.start()

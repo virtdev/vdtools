@@ -1,4 +1,4 @@
-#      handler.py
+#      filter.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -22,40 +22,40 @@ from lib.log import log_err
 from loader import VDevLoader
 from base64 import encodestring
 from sandbox import SANDBOX_PUT
-from conf.virtdev import HANDLER_PORT
+from conf.virtdev import FILTER_PORT
 
-class VDevHandler(object):  
+class VDevFilter(object):
     def __init__(self, uid):
-        self._handlers = {}
+        self._filters = {}
         self._loader = VDevLoader(uid)
     
     def _get_code(self, name):
-        buf = self._handlers.get(name)
+        buf = self._filters.get(name)
         if not buf:
-            buf = self._loader.get_handler(name)
-            self._handlers.update({name:buf})
+            buf = self._loader.get_filter(name)
+            self._filters.update({name:buf})
         return buf
     
-    def remove(self, name):
-        if not self._handlers.has_key(name):
-            return
-        del self._handlers[name]
-    
     def check(self, name):
-        if self._handlers.has_key(name):
-            if self._handlers[name]:
+        if self._filters.has_key(name):
+            if self._filters[name]:
                 return True
         else:
-            buf = self._loader.get_handler(name)
-            self._handlers.update({name:buf})
+            buf = self._loader.get_filter(name)
+            self._filters.update({name:buf})
             if buf:
                 return True
+    
+    def remove(self, name):
+        if not self._filters.has_key(name):
+            return
+        del self._filters[name]
     
     def put(self, name, buf):
         try:
             code = self._get_code(name)
             if code:
-                return sandbox.request(HANDLER_PORT, SANDBOX_PUT, code=encodestring(code), args=buf)
+                return sandbox.request(FILTER_PORT, SANDBOX_PUT, code=encodestring(code), args=buf)
         except:
             log_err(self, 'failed to put')
     
