@@ -40,11 +40,11 @@ class VDevEnginInterface(object):
         self._data = Data()
         self._edge = Edge()
         self._vertex = Vertex()
-        self.manager = manager
-        self.manager.start()
+        self._manager = manager
+        self._manager.start()
     
     def enable(self, name):
-        for d in self.manager.devices:
+        for d in self._manager.devices:
             dev = d.find(name)
             if dev:
                 dev.proc(name, OP_OPEN)
@@ -91,14 +91,14 @@ class VDevEnginInterface(object):
                 self._edge.initialize(uid, (v, name), hidden=True)
         
         if lo:
-            self.manager.lo.register(get_device(typ, name), init=False)
+            self._manager.lo.register(get_device(typ, name), init=False)
 
 class VDevEngine(Thread):
     def __init__(self):
         Thread.__init__(self)
-        self.manager = VDevManager()
+        self._manager = VDevManager()
     
     def run(self):
-        srv = zerorpc.Server(VDevEnginInterface(self.manager))
+        srv = zerorpc.Server(VDevEnginInterface(self._manager))
         srv.bind(zmqaddr('127.0.0.1', ENGINE_PORT))
         srv.run()

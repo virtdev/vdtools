@@ -19,8 +19,8 @@
 
 from lo import VDevLo
 from threading import Thread
+from proc.core import VDevCore
 from proc.sandbox import VDevSandbox
-from proc.synchronizer import VDevSynchronizer
 from conf.virtdev import FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, DEFAULT_UID
 
 class VDevManager(object):
@@ -34,18 +34,19 @@ class VDevManager(object):
     
     def _init_dev(self):
         self.devices = []
-        self.lo = VDevLo(self)
+        self.lo = VDevLo(self.uid, self.core)
         self.devices.append(self.lo)
     
-    def _init_synchronizer(self):
-        self.synchronizer = VDevSynchronizer(self)
+    def _init_core(self):
+        self.core = VDevCore(self)
     
     def _initialize(self):
         self._init_sandbox()
-        self._init_synchronizer()
+        self._init_core()
         self._init_dev()
     
     def __init__(self):
+        self.tunnel = None
         self.uid = DEFAULT_UID
         self._active = False
         self._initialize()
