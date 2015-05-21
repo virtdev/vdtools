@@ -17,31 +17,31 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-from lo import VDevLo
+from proc.core import Core
+from proc.proc import Proc
+from interfaces.lo import Lo
 from threading import Thread
-from proc.core import VDevCore
-from proc.sandbox import VDevSandbox
-from conf.virtdev import FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, DEFAULT_UID
+from conf.virtdev import PROC_ADDR, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, DEFAULT_UID
 
-class VDevManager(object):
-    def _init_sandbox(self):
-        self._filter = VDevSandbox(FILTER_PORT)
-        self._handler = VDevSandbox(HANDLER_PORT)
-        self._dispatcher = VDevSandbox(DISPATCHER_PORT)
+class Manager(object):
+    def _init_proc(self):
+        self._filter = Proc(self, (PROC_ADDR, FILTER_PORT))
+        self._handler = Proc(self, (PROC_ADDR, HANDLER_PORT))
+        self._dispatcher = Proc(self, (PROC_ADDR, DISPATCHER_PORT))
         self._filter.start()
         self._handler.start()
         self._dispatcher.start()
     
     def _init_dev(self):
         self.devices = []
-        self.lo = VDevLo(self.uid, self.core)
-        self.devices.append(self.lo)
+        self._lo = Lo(self.uid, self.core)
+        self.devices.append(self._lo)
     
     def _init_core(self):
-        self.core = VDevCore(self)
+        self.core = Core(self)
     
     def _initialize(self):
-        self._init_sandbox()
+        self._init_proc()
         self._init_core()
         self._init_dev()
     
@@ -59,3 +59,6 @@ class VDevManager(object):
         if not self._active:
             Thread(target=self._start).start()
             self._active = True
+    
+    def create(self, device, init):
+        return self._lo.create(device, init)

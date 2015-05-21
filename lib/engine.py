@@ -19,22 +19,22 @@
 
 import zerorpc
 from log import log_err
+from dev.udo import UDO
 from util import zmqaddr
 from fs.attr import Attr
 from fs.data import Data
 from fs.edge import Edge
 from lib.op import OP_OPEN
-from dev.udo import VDevUDO
 from fs.vertex import Vertex
 from threading import Thread
-from dev.lo import get_device
 from lib.util import load_driver
-from dev.manager import VDevManager
+from dev.manager import Manager
 from conf.virtdev import ENGINE_PORT
 from lib.mode import MODE_LO, MODE_VIRT
+from dev.interfaces.lo import device_name
 from fs.attr import ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PROFILE, ATTR_DISPATCHER
 
-class VDevEnginInterface(object):
+class EnginInterface(object):
     def __init__(self, manager):
         self._attr = Attr()
         self._data = Data()
@@ -61,11 +61,11 @@ class VDevEnginInterface(object):
                 if not driver:
                     log_err(self, 'failed to create device')
                     raise Exception('failed to create device')
-                mode = driver.mode
-                freq = driver.freq
-                prof = driver.profile
+                mode = driver.get_mode()
+                freq = driver.get_freq()
+                prof = driver.get_profile()
             elif mode & MODE_VIRT:
-                prof = VDevUDO().d_profile
+                prof = UDO().d_profile
         
         self._data.initialize(uid, name)
         self._attr.initialize(uid, name, {ATTR_MODE:mode})
@@ -91,14 +91,14 @@ class VDevEnginInterface(object):
                 self._edge.initialize(uid, (v, name), hidden=True)
         
         if lo:
-            self._manager.lo.register(get_device(typ, name), init=False)
+            self._manager.create(device_name(typ, name), init=False)
 
-class VDevEngine(Thread):
+class Engine(Thread):
     def __init__(self):
         Thread.__init__(self)
-        self._manager = VDevManager()
+        self._manager = Manager()
     
     def run(self):
-        srv = zerorpc.Server(VDevEnginInterface(self._manager))
+        srv = zerorpc.Server(EnginInterface(self._manager))
         srv.bind(zmqaddr('127.0.0.1', ENGINE_PORT))
         srv.run()

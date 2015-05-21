@@ -18,36 +18,30 @@
 #      MA 02110-1301, USA.
 
 import os
+import ast
 import imp
+import uuid
 import struct
 
 UID_SIZE = 32
 DEFAULT_UID = '0' * UID_SIZE
-DEVNULL = open(os.devnull, 'wb')
+INFO_FIELDS = ['mode', 'type', 'freq', 'range']
 
 DIR_MODE = 0o755
 FILE_MODE = 0o644
 
-_default_addr = None
+DEVNULL = open(os.devnull, 'wb')
+DRIVER_PATH = os.path.join(os.getcwd(), 'drivers')
 
 def zmqaddr(addr, port):
     return 'tcp://%s:%d' % (str(addr), int(port))
 
-def hash_name(name):
-    length = len(name)
-    if length > 1:
-        return (ord(name[-2]) << 8) + ord(name[-1])
-    elif length == 1:
-        return ord(name[-1])
-    else:
-        return 0
-
-def service_start(*args):
-    for srv in args:
+def srv_start(srv_list):
+    for srv in srv_list:
         srv.start()
 
-def service_join(*args):
-    for srv in args:
+def srv_join(srv_list):
+    for srv in srv_list:
         srv.join()
 
 def send_pkt(sock, buf):
@@ -56,7 +50,7 @@ def send_pkt(sock, buf):
     if buf:
         sock.sendall(buf)
 
-def _recv(sock, length):
+def recv_bytes(sock, length):
     ret = []
     while length > 0:
         buf = sock.recv(min(length, 2048))
@@ -67,11 +61,11 @@ def _recv(sock, length):
     return ''.join(ret)
 
 def recv_pkt(sock):
-    head = _recv(sock, 4)
+    head = recv_bytes(sock, 4)
     if not head:
         return ''
     length = struct.unpack('I', head)[0]
-    return _recv(sock, length)
+    return recv_bytes(sock, length)
 
 def close_port(port):
     cmd = 'lsof -i:%d -Fp | cut -c2- | xargs --no-run-if-empty kill -9' % port
@@ -87,6 +81,20 @@ def lock(func):
             self._lock.release()
     return _lock
 
+def get_name(ns, parent, child=None):
+    if None == child:
+        child = ''
+    return uuid.uuid5(uuid.UUID(ns), os.path.join(str(parent), str(child))).hex
+
+def hash_name(name):
+    length = len(name)
+    if length > 1:
+        return (ord(name[-2]) << 8) + ord(name[-1])
+    elif length == 1:
+        return ord(name[-1])
+    else:
+        return 0
+
 def named_lock(func):
     def _named_lock(*args, **kwargs):
         self = args[0]
@@ -101,14 +109,33 @@ def named_lock(func):
 def mount_device(uid, name, mode, freq, prof):
     pass
 
-DRIVER_PATH = os.path.join(os.getcwd(), 'drivers')
-
-def load_driver(typ, name=None, sock=None):
+def load_driver(typ, name=None):
     try:
         module = imp.load_source(typ, os.path.join(DRIVER_PATH, '%s.py' % typ.lower()))
         if module and hasattr(module, typ):
             driver = getattr(module, typ)
             if driver:
-                return driver(name, sock)
+                return driver(name=name)
+    except:
+        pass
+    
+def info(typ, mode=0, freq=None, rng=None):
+    ret = {'type':typ, 'mode':mode}
+    if freq:
+        ret.update({'freq':freq})
+    if range:
+        ret.update({'range':rng})
+    return ret
+
+def check_info(buf):
+    try:
+        info = ast.literal_eval(buf)
+        if type(info) != dict:
+            return
+        for i in info:
+            for j in info[i].keys():
+                if j not in INFO_FIELDS:
+                    return
+        return info
     except:
         pass

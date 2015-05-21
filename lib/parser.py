@@ -18,18 +18,18 @@
 #      MA 02110-1301, USA.
 
 import os
-from graph import VDGraph
-from source import VDSource
+from graph import Graph
+from source import Source
 from lib.log import log_err
 from conf.virtdev import DEFAULT_UID
 from lib.common import create, associate
 from fs.attr import ATTR_FILTER, ATTR_HANDLER, ATTR_DISPATCHER, set_attr
 
-class VDParser(object):
+class Parser(object):
     def __init__(self, uid=DEFAULT_UID):
         self._uid = uid
-        self._graph = VDGraph()
-        self._source = VDSource()
+        self._graph = Graph()
+        self._source = Source()
     
     def parse(self, path):
         names = {}

@@ -1,4 +1,4 @@
-#      simu.py
+#      load.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -18,16 +18,16 @@
 #      MA 02110-1301, USA.
 
 import sys
-from lib.parser import VDParser
+from lib.parser import Parser
 
 def usage():
-    print 'simu.py path'
+    print 'load.py path'
     
 if __name__ == '__main__':
     argc = len(sys.argv)
     if argc != 2:
         usage()
         sys.exit()
-    parser = VDParser()
+    parser = Parser()
     ret = parser.parse(sys.argv[1])
-    print 'simu: ret=%s' % str(ret)
+    print 'load: ret=%s' % str(ret)

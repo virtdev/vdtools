@@ -19,10 +19,10 @@
 
 from lib.log import log_err
 
-VDG_PTR = '->'
-VDG_PTR_LEN = len(VDG_PTR)
+PTR = '->'
+PTR_LEN = len(PTR)
 
-class VDGraph(object):
+class Graph(object):
     def _get_grp(self, buf):
         try:
             grp = []
@@ -51,7 +51,7 @@ class VDGraph(object):
                         grp[i] = g
                     else:
                         return
-                elif item.find(VDG_PTR) >= 0:
+                elif item.find(PTR) >= 0:
                     v = self._get_vertex(item)
                     if not v:
                         return
@@ -73,10 +73,10 @@ class VDGraph(object):
                     cnt += 1
                 elif buf[i] == ']':
                     cnt -= 1
-                if (buf[i:i + VDG_PTR_LEN] == VDG_PTR or i == length - 1) and cnt == 0:
+                if (buf[i:i + PTR_LEN] == PTR or i == length - 1) and cnt == 0:
                     if i != length - 1:
                         item = buf[start:i]
-                        start = i + VDG_PTR_LEN
+                        start = i + PTR_LEN
                     else:
                         item = buf[start:]
                     items.append(item.strip())

@@ -24,7 +24,7 @@ import string
 from lib.log import log_err
 from inspect import getsourcelines
 
-class VDSource(object):
+class Source(object):
     def _get_func(self, path, name):
         mod_name = os.path.basename(path).split('.')[0]
         mod = imp.load_source(mod_name, path)

@@ -18,8 +18,8 @@
 #      MA 02110-1301, USA.
 
 import os
+from lib.engine import Engine
 from lib.util import close_port
-from lib.engine import VDevEngine
 from conf.virtdev import LO_PORT, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, MOUNTPOINT
 
 def _clean():
@@ -32,7 +32,7 @@ def mount():
     if not os.path.exists(MOUNTPOINT):
         os.makedirs(MOUNTPOINT, 0o755)
     _clean()
-    engine = VDevEngine()
+    engine = Engine()
     engine.start()
     engine.join()
     
