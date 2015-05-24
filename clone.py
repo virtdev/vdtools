@@ -1,6 +1,6 @@
-#      attr.py
+#      clone.py
 #      
-#      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
+#      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
 #      This program is free software; you can redistribute it and/or modify
 #      it under the terms of the GNU General Public License as published by
@@ -17,16 +17,16 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import os
-from path import DOMAIN
-from conf.virtdev import FS_PATH
+import sys
+from lib.common import clone
 
-class Data(object):
-    def _get_path(self, uid, name, label):
-        return str(os.path.join(FS_PATH, uid, label, name))
-    
-    def initialize(self, uid, name):
-        for i in DOMAIN:
-            path = self._get_path(uid, name, DOMAIN[i])
-            if not os.path.exists(path):
-                os.makedirs(path, 0o755)
+def usage():
+    print 'clone.py parent'
+
+if __name__ == '__main__':
+    argc = len(sys.argv)
+    if argc != 2:
+        usage()
+        sys.exit()
+    name = clone(sys.argv[1])
+    print 'clone: name=' + name

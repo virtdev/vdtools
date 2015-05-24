@@ -19,22 +19,26 @@
 
 import os
 from path import DOMAIN
+from lib.util import check_profile
 from lib.log import log_err, log_get
 from conf.virtdev import FS_PATH, MOUNTPOINT, DEFAULT_UID
 
 ATTR_MODE = 'mode'
 ATTR_FREQ = 'freq'
 ATTR_FILTER = 'filter'
+ATTR_PARENT = 'parent'
 ATTR_HANDLER = 'handler'
 ATTR_PROFILE = 'profile'
+ATTR_TIMEOUT = 'timeout'
 ATTR_DISPATCHER = 'dispatcher'
-ATTRIBUTES = [ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PROFILE, ATTR_DISPATCHER]
 
-def set_attr(uid, name, attr):
-    if attr.keys()[0] not in ATTRIBUTES:
+ATTRIBUTES = [ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PARENT, ATTR_PROFILE, ATTR_TIMEOUT, ATTR_DISPATCHER]
+
+def set_attr(uid, name, attr, val):
+    if attr not in ATTRIBUTES:
         return
     if uid == DEFAULT_UID: 
-        Attr().initialize(uid, name, attr)
+        Attr().initialize(uid, name, attr, val)
 
 def get_attr(uid, name, attr):
     ret = ''
@@ -57,71 +61,36 @@ class Attr(object):
     def _release(self, uid, name, fh, force=False):
         os.close(fh)
     
-    def _create_filter(self, uid, name, val):
-        name = os.path.join(name, ATTR_FILTER)
+    def _init_attr(self, uid, name, attr, val):
+        name = os.path.join(name, attr)
         f = self.create(uid, name)
         try:
             os.write(f, str(val))
         finally:
             self._release(uid, name, f, force=True)
     
-    def _create_mode(self, uid, name, val):
-        name = os.path.join(name, ATTR_MODE)
-        f = self.create(uid, name)
-        try:
-            os.write(f, str(val))
-        finally:
-            self._release(uid, name, f, force=True)
-    
-    def _create_freq(self, uid, name, val):
-        name = os.path.join(name, ATTR_FREQ)
-        f = self.create(uid, name)
-        try:
-            os.write(f, str(val))
-        finally:
-            self._release(uid, name, f, force=True)
-    
-    def _create_handler(self, uid, name, val):
-        name = os.path.join(name, ATTR_HANDLER)
-        f = self.create(uid, name)
-        try:
-            os.write(f, str(val))
-        finally:
-            self._release(uid, name, f, force=True)
-    
-    def _create_profile(self, uid, name, val):
-        name = os.path.join(name, ATTR_PROFILE)
-        f = self.create(uid, name)
-        try:
+    def initialize(self, uid, name, attr, val):
+        if attr not in ATTRIBUTES:
+            log_err(self, 'invalid attribute %s' % str(attr))
+            raise Exception(log_get(self,' invalid attribute'))
+        if attr == ATTR_PROFILE:
+            tmp = ''
             for i in val:
-                os.write(f, '%s=%s\n' % (str(i), str(val[i])))
-        finally:
-            self._release(uid, name, f, force=True)
+                tmp += '%s=%s\n' % (str(i), str(val[i]))
+            val = tmp
+        self._init_attr(uid, name, attr, val)
     
-    def _create_dispatcher(self, uid, name, val):
-        name = os.path.join(name, ATTR_DISPATCHER)
-        f = self.create(uid, name)
+    def get_profile(self, uid, name):
+        name = os.path.join(name, ATTR_PROFILE)
+        path = self._get_path(uid, name)
+        fd = os.open(path, os.O_RDONLY)
+        if not fd:
+            log_err(self, 'failed to get profile')
+            raise Exception(log_get(self, 'failed to get profile'))
         try:
-            os.write(f, str(val))
+            st = os.fstat(fd)
+            buf = os.read(fd, st.st_size)
+            if buf:
+                return check_profile(buf.strip().split('\n')) 
         finally:
-            self._release(uid, name, f, force=True)
-    
-    def initialize(self, uid, name, attr):
-        if type(attr) != dict or len(attr) != 1:
-            log_err(self, 'failed to initialize, invalid attr')
-            raise Exception(log_get(self, 'failed to initialize, invalid attr'))
-        key = attr.keys()[0]
-        val = attr[key]
-        if key == ATTR_FILTER:
-            self._create_filter(uid, name, val)
-        elif key == ATTR_MODE:
-            self._create_mode(uid, name, val)
-        elif key == ATTR_FREQ:
-            self._create_freq(uid, name, val)
-        elif key == ATTR_HANDLER:
-            self._create_handler(uid, name, val)
-        elif key == ATTR_PROFILE:
-            self._create_profile(uid, name, val)
-        elif key == ATTR_DISPATCHER:
-            self._create_dispatcher(uid, name, val)
-    
+            os.close(fd)

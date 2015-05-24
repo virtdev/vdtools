@@ -25,12 +25,14 @@ def get_dir(uid, name):
     return os.path.join(MOUNTPOINT, uid, DOMAIN['edge'], name)
 
 class Edge(object):
-    def _get_path(self, uid, edge):
-        return str(os.path.join(FS_PATH, uid, 'edge', edge[0], edge[1]))
+    def _get_path(self, uid, edge, hidden):
+        if not hidden:
+            return str(os.path.join(FS_PATH, uid, 'edge', edge[0], edge[1]))
+        else:
+            return str(os.path.join(FS_PATH, uid, 'edge', edge[0], '.' + edge[1]))
     
-    def initialize(self, uid, edge):
-        path = self._get_path(uid, edge)
+    def initialize(self, uid, edge, hidden=False):
+        path = self._get_path(uid, edge, hidden)
         if not os.path.exists(path):
             with open(path, 'w') as _:
                 pass
-    

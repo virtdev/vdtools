@@ -25,8 +25,8 @@ class Vertex(object):
         return str(os.path.join(FS_PATH, uid, 'vertex', name, vertex))
     
     def initialize(self, uid, name, vertex):
-        path = self._get_path(uid, name, vertex)
-        if not os.path.exists(path):
-            with open(path, 'w') as _:
-                pass
-    
+        for i in vertex:
+            path = self._get_path(uid, name, i)
+            if not os.path.exists(path):
+                with open(path, 'w') as _:
+                    pass

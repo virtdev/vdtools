@@ -1,4 +1,4 @@
-#      attr.py
+#      combine.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,16 +17,22 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import os
-from path import DOMAIN
-from conf.virtdev import FS_PATH
+import sys
+import argparse
+from lib.common import combine
 
-class Data(object):
-    def _get_path(self, uid, name, label):
-        return str(os.path.join(FS_PATH, uid, label, name))
-    
-    def initialize(self, uid, name):
-        for i in DOMAIN:
-            path = self._get_path(uid, name, DOMAIN[i])
-            if not os.path.exists(path):
-                os.makedirs(path, 0o755)
+def usage():
+    print 'combine.py -t timeout -d device1 device2 ...'
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', dest='timeout', default=None)
+    parser.add_argument('-d', nargs='*', dest='devices', default=None)
+    res = parser.parse_args(sys.argv[1:])
+    timeout = res.timeout
+    devices = res.devices
+    if not devices or len(devices) < 2:
+        usage()
+        sys.exit()
+    name = combine(devices, timeout)
+    print 'combine: name=' + name

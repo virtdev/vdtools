@@ -1,4 +1,4 @@
-#      associate.py
+#      timeout.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,17 +17,22 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import sys
-from lib.common import associate
+from lib.loader import Loader
+from fs.attr import ATTR_TIMEOUT
 
-def usage():
-    print 'connect.py src dest'
-
-if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        usage()
-        sys.exit()
-    src = sys.argv[1]
-    dest = sys.argv[2]
-    ret = associate(src, dest)
-    print 'connect: src=%s, dest=%s, ret=%s' % (src, dest, str(ret))
+class Timeout(object):
+    def __init__(self, uid):
+        self._timeout = {}
+        self._loader = Loader(uid)
+    
+    def get(self, name):
+        if self._timeout.has_key(name):
+            return self._timeout[name]
+        else:
+            timeout = self._loader.get_attr(name, ATTR_TIMEOUT, float)
+            self._timeout[name] = timeout
+            return timeout
+    
+    def remove(self, name):
+        if self._timeout.has_key(name):
+            del self._timeout[name]

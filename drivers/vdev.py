@@ -1,4 +1,4 @@
-#      attr.py
+#      vdev.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,16 +17,9 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import os
-from path import DOMAIN
-from conf.virtdev import FS_PATH
+from dev.driver import Driver
+from lib.mode import MODE_VIRT
 
-class Data(object):
-    def _get_path(self, uid, name, label):
-        return str(os.path.join(FS_PATH, uid, label, name))
-    
-    def initialize(self, uid, name):
-        for i in DOMAIN:
-            path = self._get_path(uid, name, DOMAIN[i])
-            if not os.path.exists(path):
-                os.makedirs(path, 0o755)
+class VDev(Driver):
+    def __init__(self, name=None, setup=True):
+        Driver.__init__(self, name=name, mode=MODE_VIRT, setup=setup)

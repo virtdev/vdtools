@@ -47,8 +47,8 @@ class Manager(object):
     
     def __init__(self):
         self.tunnel = None
-        self.uid = DEFAULT_UID
         self._active = False
+        self.uid = DEFAULT_UID
         self._initialize()
     
     def _start(self):

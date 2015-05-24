@@ -109,16 +109,16 @@ def named_lock(func):
 def mount_device(uid, name, mode, freq, prof):
     pass
 
-def load_driver(typ, name=None):
+def load_driver(typ, name=None, setup=False):
     try:
         module = imp.load_source(typ, os.path.join(DRIVER_PATH, '%s.py' % typ.lower()))
         if module and hasattr(module, typ):
             driver = getattr(module, typ)
             if driver:
-                return driver(name=name)
+                return driver(name=name, setup=setup)
     except:
         pass
-    
+
 def info(typ, mode=0, freq=None, rng=None):
     ret = {'type':typ, 'mode':mode}
     if freq:
@@ -139,3 +139,25 @@ def check_info(buf):
         return info
     except:
         pass
+
+def check_profile(buf):
+    prof = {}
+    for item in buf:
+        pair = item.strip().split('=')
+        if len(pair) != 2:
+            raise Exception('invalid profile')
+        if pair[0] == 'type':
+            prof.update({'type':str(pair[1])})
+        elif pair[0] == 'range':
+            r = ast.literal_eval(pair[1])
+            if type(r) != dict:
+                raise Exception('invalid profile')
+            prof.update({'range':r})
+        elif pair[0] == 'index':
+            if pair[1] == 'None':
+                prof.update({'index':None})
+            else:
+                prof.update({'index':int(pair[1])})
+    if not prof.has_key('type'):
+        raise Exception('invalid profile')
+    return prof

@@ -28,6 +28,6 @@ if __name__ == '__main__':
     if argc != 2:
         usage()
         sys.exit()
-    typ = sys.argv[1]
-    name = create(typ)
+    name = create(sys.argv[1])
     print 'create: name=' + name
+

@@ -21,8 +21,8 @@ import os
 from graph import Graph
 from source import Source
 from lib.log import log_err
+from lib.common import create, link
 from conf.virtdev import DEFAULT_UID
-from lib.common import create, associate
 from fs.attr import ATTR_FILTER, ATTR_HANDLER, ATTR_DISPATCHER, set_attr
 
 class Parser(object):
@@ -59,25 +59,25 @@ class Parser(object):
         if handlers:
             for i in handlers:
                 if self._graph.is_virtual_vertex(i) and i in v:
-                    set_attr(self._uid, names[i], {ATTR_HANDLER:handlers[i]})
+                    set_attr(self._uid, names[i], ATTR_HANDLER, handlers[i])
         
         name = os.path.join(path, 'filter.py')
         filters = self._source.parse(name)
         if filters:
             for i in filters:
                 if self._graph.is_virtual_vertex(i) and i in v:
-                    set_attr(self._uid, names[i], {ATTR_FILTER:filters[i]})
+                    set_attr(self._uid, names[i], ATTR_FILTER, filters[i])
         
         name = os.path.join(path, 'dispatcher.py')
         dispatchers = self._source.parse(name)
         if dispatchers:
             for i in dispatchers:
                 if self._graph.is_virtual_vertex(i) and i in v:
-                    set_attr(self._uid, names[i], {ATTR_DISPATCHER:dispatchers[i]})
+                    set_attr(self._uid, names[i], ATTR_DISPATCHER, dispatchers[i])
         
         for i in e:
             for j in e[i]:
                 if j != i:
-                    associate(names[i], names[j], self._uid)
+                    link(names[i], names[j], self._uid)
         
         return True

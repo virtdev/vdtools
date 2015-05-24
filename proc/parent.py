@@ -1,6 +1,6 @@
-#      attr.py
+#      parent.py
 #      
-#      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
+#      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
 #      This program is free software; you can redistribute it and/or modify
 #      it under the terms of the GNU General Public License as published by
@@ -17,16 +17,22 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import os
-from path import DOMAIN
-from conf.virtdev import FS_PATH
+from lib.loader import Loader
+from fs.attr import ATTR_PARENT
 
-class Data(object):
-    def _get_path(self, uid, name, label):
-        return str(os.path.join(FS_PATH, uid, label, name))
+class Parent(object):
+    def __init__(self, uid):
+        self._parent = {}
+        self._loader = Loader(uid)
     
-    def initialize(self, uid, name):
-        for i in DOMAIN:
-            path = self._get_path(uid, name, DOMAIN[i])
-            if not os.path.exists(path):
-                os.makedirs(path, 0o755)
+    def get(self, name):
+        if self._parent.has_key(name):
+            return self._parent[name]
+        else:
+            parent = self._loader.get_attr(name, ATTR_PARENT, str)
+            self._parent[name] = parent
+            return parent
+    
+    def remove(self, name):
+        if self._parent.has_key(name):
+            del self._parent[name]

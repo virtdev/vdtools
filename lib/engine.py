@@ -19,7 +19,6 @@
 
 import zerorpc
 from log import log_err
-from dev.udo import UDO
 from util import zmqaddr
 from fs.attr import Attr
 from fs.data import Data
@@ -30,9 +29,11 @@ from threading import Thread
 from lib.util import load_driver
 from dev.manager import Manager
 from conf.virtdev import ENGINE_PORT
-from lib.mode import MODE_LO, MODE_VIRT
 from dev.interfaces.lo import device_name
-from fs.attr import ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PROFILE, ATTR_DISPATCHER
+from lib.mode import MODE_LO, MODE_VIRT, MODE_CLONE
+from fs.attr import ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PROFILE, ATTR_DISPATCHER, ATTR_PARENT, ATTR_TIMEOUT
+
+TYPE_VDEV = 'VDev'
 
 class EnginInterface(object):
     def __init__(self, manager):
@@ -49,49 +50,72 @@ class EnginInterface(object):
             if dev:
                 dev.proc(name, OP_OPEN)
     
-    def create(self, uid, name, mode, vertex, parent, freq, prof, hndl, filt, disp, typ):
+    def create(self, uid, name, mode, vertex, parent, freq, prof, hndl, filt, disp, typ, timeout):
         lo = mode & MODE_LO
         if lo and not typ:
             log_err(self, 'failed to create device, invalid device')
             raise Exception('ailed to create device')
         
+        if mode & MODE_CLONE:
+            if not parent:
+                log_err(self, 'failed to create device, no parent')
+                raise Exception('failed to create device')
+            prof = self._attr.get_profile(uid, parent)
+            typ = prof['type']
+        
+        if not mode & MODE_VIRT:
+            timeout = None
+        
+        if mode & MODE_VIRT:
+            typ = TYPE_VDEV
+        
         if not prof:
-            if lo:
+            if typ:
                 driver = load_driver(typ)
                 if not driver:
                     log_err(self, 'failed to create device')
                     raise Exception('failed to create device')
-                mode = driver.get_mode()
+                if mode & MODE_CLONE:
+                    mode = driver.get_mode() | MODE_CLONE
+                else:
+                    mode = driver.get_mode()
                 freq = driver.get_freq()
                 prof = driver.get_profile()
-            elif mode & MODE_VIRT:
-                prof = UDO().d_profile
         
         self._data.initialize(uid, name)
-        self._attr.initialize(uid, name, {ATTR_MODE:mode})
+        self._attr.initialize(uid, name, ATTR_MODE, mode)
         
         if freq:
-            self._attr.initialize(uid, name, {ATTR_FREQ:freq})
+            self._attr.initialize(uid, name, ATTR_FREQ, freq)
         
         if filt:
-            self._attr.initialize(uid, name, {ATTR_FILTER:filt})
+            self._attr.initialize(uid, name, ATTR_FILTER, filt)
         
         if hndl:
-            self._attr.initialize(uid, name, {ATTR_HANDLER:hndl})
+            self._attr.initialize(uid, name, ATTR_HANDLER, hndl)
         
         if prof:
-            self._attr.initialize(uid, name, {ATTR_PROFILE:prof})
+            self._attr.initialize(uid, name, ATTR_PROFILE, prof)
+        
+        if mode & MODE_CLONE:
+            self._attr.initialize(uid, name, ATTR_PARENT, parent)
         
         if disp:
-            self._attr.initialize(uid, name, {ATTR_DISPATCHER:disp})
+            self._attr.initialize(uid, name, ATTR_DISPATCHER, disp)
+        
+        if timeout:
+            self._attr.initialize(uid, name, ATTR_TIMEOUT, timeout)
         
         if vertex:
+            if mode & MODE_CLONE:
+                log_err(self, 'failed to create device, invalid vertex')
+                raise Exception('failed to create device')
             self._vertex.initialize(uid, name, vertex)
             for v in vertex:
                 self._edge.initialize(uid, (v, name), hidden=True)
         
         if lo:
-            self._manager.create(device_name(typ, name), init=False)
+            self._manager.create(device_name(typ, name, mode), init=False)
 
 class Engine(Thread):
     def __init__(self):

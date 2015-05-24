@@ -22,7 +22,7 @@ import uuid
 import zerorpc
 from fs import edge
 from lib.util import zmqaddr
-from lib.mode import MODE_VIRT, MODE_VISI, MODE_LO
+from lib.mode import MODE_VIRT, MODE_VISI, MODE_CLONE, MODE_LO
 from conf.virtdev import MOUNTPOINT, ENGINE_PORT, DEFAULT_UID
 
 def check_uuid(identity):
@@ -30,37 +30,51 @@ def check_uuid(identity):
         return uuid.UUID(identity).hex
     except:
         return
-        
-def create(typ=None, uid=DEFAULT_UID): 
+
+def create(typ=None): 
     if not typ:
         mode = MODE_VIRT
     else:
         mode = MODE_LO
-    
-    name = uuid.uuid4().hex
     mode |= MODE_VISI
-    if uid == DEFAULT_UID:
-        cli = zerorpc.Client()
-        cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
-        cli.create(uid, name, mode, None, None, None, None, None, None, None, typ)
-        cli.close()
+    name = uuid.uuid4().hex
+    cli = zerorpc.Client()
+    cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+    cli.create(DEFAULT_UID, name, mode, None, None, None, None, None, None, None, typ, None)
+    cli.close()
     return name
 
-def enable(name, uid=DEFAULT_UID):
-    if uid == DEFAULT_UID:
-        cli = zerorpc.Client()
-        cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
-        cli.enable(name)
-        cli.close()
+def clone(parent):
+    mode = MODE_CLONE
+    name = uuid.uuid4().hex
+    cli = zerorpc.Client()
+    cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+    cli.create(DEFAULT_UID, name, mode, None, parent, None, None, None, None, None, None, None)
+    cli.close()
+    return name
 
-def associate(src, dest, uid=DEFAULT_UID):
+def combine(vertex, timeout):
+    mode = MODE_VIRT
+    name = uuid.uuid4().hex
+    cli = zerorpc.Client()
+    cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+    cli.create(DEFAULT_UID, name, mode, vertex, None, None, None, None, None, None, None, timeout)
+    cli.close()
+    return name
+
+def enable(name):
+    cli = zerorpc.Client()
+    cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+    cli.enable(name)
+    cli.close()
+
+def link(src, dest):
     if not check_uuid(src) or not check_uuid(dest):
         print 'invalid identity'
         return False
-    path = edge.get_dir(uid, src)
+    path = edge.get_dir(DEFAULT_UID, src)
     if os.path.exists(path):
-        with open(os.path.join(path, dest), 'w') as _:
-            pass
+        os.system('touch %s' % os.path.join(path, dest))
         return True
 
 def clear():
