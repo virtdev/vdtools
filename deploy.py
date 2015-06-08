@@ -1,4 +1,4 @@
-#      virtdev.py
+#      deploy.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,16 +17,20 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-LO_PORT = 12101
-ENGINE_PORT = 11101
-FILTER_PORT = 17101
-HANDLER_PORT = 19101
-DISPATCHER_PORT = 21101
+import sys
+from lib.parser import Parser
 
-LO_ADDR = '127.0.0.1'
-PROC_ADDR = '127.0.0.1'
-
-FS_PATH = '/var/lib/vdtools/vdev'
-VDFS_PATH = '/mnt/vdev'
-MOUNTPOINT = FS_PATH
-DEFAULT_UID = ''
+def usage():
+    print 'deploy.py path uid'
+    
+if __name__ == '__main__':
+    argc = len(sys.argv)
+    if argc != 3:
+        usage()
+        sys.exit()
+    path = sys.argv[1]
+    uid = sys.argv[2]
+    parser = Parser(uid)
+    if parser.parse(path):
+        ret = parser.build(path)
+        print 'deploy: ret=%s' % str(ret)
