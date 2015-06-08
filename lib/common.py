@@ -82,5 +82,5 @@ def link(src, dest, uid=DEFAULT_UID):
             os.system('touch %s' % os.path.join(path, dest))
             return True
 
-def clear():
+def clean():
     os.system('rm -rf %s' % MOUNTPOINT)

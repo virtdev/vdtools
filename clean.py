@@ -1,4 +1,4 @@
-#      clear.py
+#      clean.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,7 +17,7 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-from lib.common import clear
+from lib.common import clean
 
 if __name__ == '__main__':
-    clear()
+    clean()

@@ -30,4 +30,3 @@ if __name__ == '__main__':
         sys.exit()
     name = create(sys.argv[1])
     print 'create: name=' + name
-

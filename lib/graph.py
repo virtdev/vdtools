@@ -259,20 +259,18 @@ class Graph(object):
             return (None, None)
     
     def has_type(self, v):
-        if v.startswith('@'):
+        if not v.startswith('*'):
             return True
     
     def get_type(self, v):
-        if v.startswith('@'):
-            typ = v[1:]
-            pair = typ.split('_')
+        if self.has_type(v):
+            pair = v.split('_')
             length = len(pair)
             if length == 2:
                 return pair[0]
             elif length == 1:
-                return typ
-    
-    def get_device(self, v):
-        if v.startswith('@'):
+                return v
+
+    def get_identity(self, v):
+        if v.startswith('*'):
             return v[1:]
-    

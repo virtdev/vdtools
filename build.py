@@ -28,6 +28,8 @@ if __name__ == '__main__':
     if argc != 2:
         usage()
         sys.exit()
+    path = sys.argv[1]
     parser = Parser()
-    ret = parser.parse(sys.argv[1])
-    print 'build: ret=%s' % str(ret)
+    if parser.parse(path):
+        ret = parser.build(path)
+        print 'build: ret=%s' % str(ret)

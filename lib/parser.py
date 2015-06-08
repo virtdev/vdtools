@@ -21,9 +21,12 @@ import os
 from graph import Graph
 from source import Source
 from lib.log import log_err
-from lib.common import create, link
 from conf.virtdev import DEFAULT_UID
+from lib.common import combine, create, link
 from fs.attr import ATTR_FILTER, ATTR_HANDLER, ATTR_DISPATCHER, set_attr
+
+TIMEOUT = 5 # seconds
+TYPE_VDEV = 'VDev'
 
 class Parser(object):
     def __init__(self, uid=DEFAULT_UID):
@@ -31,8 +34,9 @@ class Parser(object):
         self._graph = Graph()
         self._source = Source()
     
-    def parse(self, path):
+    def _parse(self, path, build=False):
         names = {}
+        virtual = []
         devices = []
         name = os.path.join(path, 'graph')
         v, e = self._graph.parse(name)
@@ -40,41 +44,71 @@ class Parser(object):
             log_err(self, 'invalid graph')
             return
         
+        path_device = os.path.join(path, 'device')
+        source_device = self._source.get_val(path_device)
+        path_timeout =  os.path.join(path, 'timeout')
+        source_timeout = self._source.get_val(path_timeout)
         for i in v:
             if self._graph.has_type(i):
+                members = None
                 typ = self._graph.get_type(i)
+                
                 if not typ:
                     log_err(self, 'invalid graph')
                     return
-        
-        for i in v:
-            if self._graph.has_type(i):
-                typ = self._graph.get_type(i)
-                n = create(typ, uid=self._uid)
-                device = self._graph.get_device(i)
-                if device and device not in devices:
-                    devices.append(device)
-                    names.update({device:n})
+                
+                if i in devices:
+                    continue
+                
+                if typ == TYPE_VDEV:
+                    members = source_device.get(i)
+                    if members and type(members) != list:
+                        log_err(self, 'invalid graph')
+                        return
+                
+                n = None
+                if not members:
+                    if build:
+                        n = create(typ, uid=self._uid)
+                else:
+                    vertex = []
+                    timeout = source_timeout.get(i)
+                    if not timeout or type(timeout) not in (int, float):
+                        timeout = TIMEOUT
+                    for j in members:
+                        if self._graph.has_type(j):
+                            typ = self._graph.get_type(j)
+                            if build:
+                                n = create(typ, uid=self._uid)
+                            vertex.append(n)
+                        else:
+                            vertex.append(self._graph.get_identity(j))
+                    if build:
+                        n = combine(vertex, timeout, uid=self._uid)
+                    virtual.append(i)
+                
+                devices.append(i)
+                names.update({i:n})
             else:
-                names.update({i:i})
+                names.update({i:self._get_identity(i)})
         
-        name = os.path.join(path, 'handler.py')
-        handlers = self._source.parse(name)
-        if handlers:
+        path_handler = os.path.join(path, 'handler.py')
+        handlers = self._source.get_func(path_handler)
+        if handlers and build:
             for i in handlers:
                 if i in devices:
                     set_attr(self._uid, names[i], ATTR_HANDLER, handlers[i])
         
-        name = os.path.join(path, 'filter.py')
-        filters = self._source.parse(name)
-        if filters:
+        path_filter = os.path.join(path, 'filter.py')
+        filters = self._source.get_func(path_filter)
+        if filters and build:
             for i in filters:
-                if i in devices:
+                if i in virtual:
                     set_attr(self._uid, names[i], ATTR_FILTER, filters[i])
         
-        name = os.path.join(path, 'dispatcher.py')
-        dispatchers = self._source.parse(name)
-        if dispatchers:
+        path_dispatcher = os.path.join(path, 'dispatcher.py')
+        dispatchers = self._source.get_func(path_dispatcher)
+        if dispatchers and build:
             for i in dispatchers:
                 if i in devices:
                     set_attr(self._uid, names[i], ATTR_DISPATCHER, dispatchers[i])
@@ -82,16 +116,15 @@ class Parser(object):
         for i in e:
             for j in e[i]:
                 if j != i:
-                    if self._graph.has_type(i):
-                        src = self._graph.get_device(i)
-                    else:
-                        src = i
-                    if self._graph.has_type(j):
-                        dest = self._graph.get_device(j)
-                    else:
-                        dest = j
-                    if not names.has_key(src) or not names.has_key(dest):
+                    if not names.has_key(i) or not names.has_key(j):
                         log_err(self, 'invalid graph')
                         return
-                    link(names[src], names[dest], self._uid)
+                    if build:
+                        link(names[i], names[j], uid=self._uid)
         return True
+    
+    def parse(self, path):
+        return self._parse(path, build=False)
+    
+    def build(self, path):
+        return self._parse(path, build=True)

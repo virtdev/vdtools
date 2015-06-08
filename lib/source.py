@@ -33,20 +33,42 @@ class Source(object):
         lines[0] = string.replace(lines[0], 'def %s' % name, 'def func')
         return ''.join(lines)
         
-    def parse(self, path):
+    def get_func(self, path):
+        ret = {}
         if not os.path.exists(path):
-            return
+            return ret
         with open(path) as f:
             buf = f.read()
         module = ast.parse(buf)
         func_list = [item.name for item in module.body if isinstance(item, ast.FunctionDef)]
         if not func_list:
-            return
-        ret = {}
+            return ret
         for name in func_list:
             src = self._get_func(path, name)
             if not src:
                 log_err(self, 'invalid function %s' % name)
-                return
+                raise Exception('invalid function')
             ret.update({name:src})
+        return ret
+    
+    def get_val(self, path):
+        ret = {}
+        if not os.path.exists(path):
+            return ret
+        with open(path) as f:
+            buf = f.readlines()
+        for item in buf:
+            key, val = item.split('=')
+            k = key.strip()
+            v = val.strip()
+            if v.startswith('(') and v.endswith(')'):
+                v = v[1:-1].split(',')
+                if not v:
+                    log_err(self, 'invalid value %s' % str(v))
+                    raise Exception('invalid value')
+                for i in range(len(v)):
+                    v[i] = v[i].strip()
+            else:
+                v = ast.literal_eval(v)
+            ret.update({k:v})
         return ret
