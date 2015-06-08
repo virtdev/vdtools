@@ -22,8 +22,8 @@ import uuid
 import zerorpc
 from fs import edge
 from lib.util import zmqaddr
-from lib.mode import MODE_VIRT, MODE_VISI, MODE_CLONE, MODE_LO
 from conf.virtdev import MOUNTPOINT, ENGINE_PORT, DEFAULT_UID
+from lib.mode import MODE_VIRT, MODE_VISI, MODE_CLONE, MODE_LO
 
 def check_uuid(identity):
     try:
@@ -31,51 +31,56 @@ def check_uuid(identity):
     except:
         return
 
-def create(typ=None): 
+def create(typ=None, uid=DEFAULT_UID):
     if not typ:
         mode = MODE_VIRT
     else:
         mode = MODE_LO
     mode |= MODE_VISI
     name = uuid.uuid4().hex
-    cli = zerorpc.Client()
-    cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
-    cli.create(DEFAULT_UID, name, mode, None, None, None, None, None, None, None, typ, None)
-    cli.close()
+    if uid == DEFAULT_UID:
+        cli = zerorpc.Client()
+        cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+        cli.create(uid, name, mode, None, None, None, None, None, None, None, typ, None)
+        cli.close()
     return name
 
-def clone(parent):
+def clone(parent, uid=DEFAULT_UID):
     mode = MODE_CLONE
     name = uuid.uuid4().hex
-    cli = zerorpc.Client()
-    cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
-    cli.create(DEFAULT_UID, name, mode, None, parent, None, None, None, None, None, None, None)
-    cli.close()
+    if uid == DEFAULT_UID:
+        cli = zerorpc.Client()
+        cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+        cli.create(uid, name, mode, None, parent, None, None, None, None, None, None, None)
+        cli.close()
     return name
 
-def combine(vertex, timeout):
+def combine(vertex, timeout, uid=DEFAULT_UID):
     mode = MODE_VIRT
     name = uuid.uuid4().hex
-    cli = zerorpc.Client()
-    cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
-    cli.create(DEFAULT_UID, name, mode, vertex, None, None, None, None, None, None, None, timeout)
-    cli.close()
+    if uid == DEFAULT_UID:
+        cli = zerorpc.Client()
+        cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+        cli.create(uid, name, mode, vertex, None, None, None, None, None, None, None, timeout)
+        cli.close()
     return name
 
-def enable(name):
-    cli = zerorpc.Client()
-    cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
-    cli.enable(name)
-    cli.close()
+def enable(name, uid=DEFAULT_UID):
+    if uid == DEFAULT_UID:
+        cli = zerorpc.Client()
+        cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
+        cli.enable(name)
+        cli.close()
 
-def link(src, dest):
+def link(src, dest, uid=DEFAULT_UID):
     if not check_uuid(src) or not check_uuid(dest):
         print 'invalid identity'
         return False
-    path = edge.get_dir(DEFAULT_UID, src)
-    if os.path.exists(path):
-        os.system('touch %s' % os.path.join(path, dest))
-        return True
+    if uid == DEFAULT_UID:
+        path = edge.get_dir(uid, src)
+        if os.path.exists(path):
+            os.system('touch %s' % os.path.join(path, dest))
+            return True
 
 def clear():
     os.system('rm -rf %s' % MOUNTPOINT)

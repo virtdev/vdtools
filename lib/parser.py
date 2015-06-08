@@ -33,6 +33,7 @@ class Parser(object):
     
     def parse(self, path):
         names = {}
+        devices = []
         name = os.path.join(path, 'graph')
         v, e = self._graph.parse(name)
         if not v or not e:
@@ -40,39 +41,42 @@ class Parser(object):
             return
         
         for i in v:
-            if not self._graph.is_virtual_vertex(i):
-                typ = self._graph.get_vertex_type(i)
+            if self._graph.has_type(i):
+                typ = self._graph.get_type(i)
                 if not typ:
                     log_err(self, 'invalid graph')
                     return
         
         for i in v:
-            if self._graph.is_virtual_vertex(i):
-                n = create(uid=self._uid)
-            else:
-                typ = self._graph.get_vertex_type(i)
+            if self._graph.has_type(i):
+                typ = self._graph.get_type(i)
                 n = create(typ, uid=self._uid)
-            names.update({i:n})
+                device = self._graph.get_device(i)
+                if device and device not in devices:
+                    devices.append(device)
+                names.update({i:n})
+            else:
+                names.update({i:i})
         
         name = os.path.join(path, 'handler.py')
         handlers = self._source.parse(name)
         if handlers:
             for i in handlers:
-                if self._graph.is_virtual_vertex(i) and i in v:
+                if i in devices:
                     set_attr(self._uid, names[i], ATTR_HANDLER, handlers[i])
         
         name = os.path.join(path, 'filter.py')
         filters = self._source.parse(name)
         if filters:
             for i in filters:
-                if self._graph.is_virtual_vertex(i) and i in v:
+                if i in devices:
                     set_attr(self._uid, names[i], ATTR_FILTER, filters[i])
         
         name = os.path.join(path, 'dispatcher.py')
         dispatchers = self._source.parse(name)
         if dispatchers:
             for i in dispatchers:
-                if self._graph.is_virtual_vertex(i) and i in v:
+                if i in devices:
                     set_attr(self._uid, names[i], ATTR_DISPATCHER, dispatchers[i])
         
         for i in e:

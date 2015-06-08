@@ -166,7 +166,7 @@ class Graph(object):
                         v = i
                 else:
                     tmp_edges, tmp_start, tmp_end = self._extract_edges(i)
-                    if not tmp_start or not tmp_end or (type(v) != str and len(v) > 1 and len(tmp_start) > 1):
+                    if not tmp_start or not tmp_end:
                         log_err(self, 'invalid graph')
                         return
                     if type(v) == str or len(v) == 1:
@@ -182,16 +182,16 @@ class Graph(object):
                                 if j not in edges[v]:
                                     edges[v].append(j)
                     else:
-                        tmp = tmp_start[0]
-                        if type(tmp) != str:
-                            log_err(self, 'invalid graph')
-                            return
-                        for j in v:
-                            if not edges.has_key(j):
-                                edges.update({j:tmp})
-                            else:
-                                if tmp not in edges[j]:
-                                    edges[j].append(tmp)
+                        for j in tmp_start:
+                            if type(j) != str:
+                                log_err(self, 'invalid graph')
+                                return
+                            for k in v:
+                                if not edges.has_key(k):
+                                    edges.update({k:[j]})
+                                else:
+                                    if j not in edges[k]:
+                                        edges[k].append(j)
                     
                     for j in tmp_edges:
                         if type(j) != str:
@@ -258,11 +258,11 @@ class Graph(object):
             log_err(self, 'failed to parse')
             return (None, None)
     
-    def is_virtual_vertex(self, v):
-        if not v.startswith('@'):
+    def has_type(self, v):
+        if v.startswith('@'):
             return True
     
-    def get_vertex_type(self, v):
+    def get_type(self, v):
         if v.startswith('@'):
             typ = v[1:]
             pair = typ.split('_')
@@ -271,4 +271,8 @@ class Graph(object):
                 return pair[0]
             elif length == 1:
                 return typ
+    
+    def get_device(self, v):
+        if v.startswith('@'):
+            return v[1:]
     
