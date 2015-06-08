@@ -54,7 +54,7 @@ class Parser(object):
                 device = self._graph.get_device(i)
                 if device and device not in devices:
                     devices.append(device)
-                names.update({i:n})
+                    names.update({device:n})
             else:
                 names.update({i:i})
         
@@ -82,6 +82,16 @@ class Parser(object):
         for i in e:
             for j in e[i]:
                 if j != i:
-                    link(names[i], names[j], self._uid)
-        
+                    if self._graph.has_type(i):
+                        src = self._graph.get_device(i)
+                    else:
+                        src = i
+                    if self._graph.has_type(j):
+                        dest = self._graph.get_device(j)
+                    else:
+                        dest = j
+                    if not names.has_key(src) or not names.has_key(dest):
+                        log_err(self, 'invalid graph')
+                        return
+                    link(names[src], names[dest], self._uid)
         return True
