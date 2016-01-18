@@ -1,4 +1,4 @@
-#      link.py
+#      server.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,17 +17,18 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import sys
-from lib.common import link
+import zerorpc
+from util import zmqaddr
+from parser import Parser
+from conf.vdtools import VDTOOLS_PORT
 
-def usage():
-    print 'link.py src dest'
+class ServerHandler(object):
+    def build(self, uid, path):
+        parser = Parser(uid)
+        return parser.build(path)
 
-if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        usage()
-        sys.exit()
-    src = sys.argv[1]
-    dest = sys.argv[2]
-    ret = link(src, dest)
-    print 'link: src=%s, dest=%s, ret=%s' % (src, dest, str(ret))
+class Server(object):
+    def run(self):
+        srv = zerorpc.Server(ServerHandler())
+        srv.bind(zmqaddr('0.0.0.0', VDTOOLS_PORT))
+        srv.run()

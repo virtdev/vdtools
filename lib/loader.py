@@ -18,33 +18,28 @@
 #      MA 02110-1301, USA.
 
 import os
+import json
 from fs.path import DOMAIN
-from util import check_profile
-from fs.attr import ATTR_PROFILE
-from conf.virtdev import MOUNTPOINT
+from util import unicode2str
+from conf.path import PATH_MOUNTPOINT
+from lib.attributes import ATTR_PROFILE
 
 class Loader(object):
     def __init__(self, uid):
         self._uid = uid
     
     def _get_path(self, name, attr):
-        return os.path.join(MOUNTPOINT, self._uid, DOMAIN['attr'], name, attr)
+        return os.path.join(PATH_MOUNTPOINT, self._uid, DOMAIN['attr'], name, attr)
     
     def _read(self, name, attr):
         path = self._get_path(name, attr)
-        if not os.path.exists(path):
+        try:
+            os.stat(path)
+        except:
             return ''
         with open(path, 'r') as f:
             buf = f.read()
         return buf
-    
-    def _readlines(self, name, attr):
-        path = self._get_path(name, attr)
-        if not os.path.exists(path):
-            return
-        with open(path, 'r') as f:
-            lines = f.readlines()
-        return lines
     
     def get_attr(self, name, attr, typ):
         buf = self._read(name, attr)
@@ -52,6 +47,7 @@ class Loader(object):
             return typ(buf)
     
     def get_profile(self, name):
-        buf = self._readlines(name, ATTR_PROFILE)
+        buf = self._read(name, ATTR_PROFILE)
         if buf:
-            return check_profile(buf)
+            attr = json.loads(buf)
+            return unicode2str(attr)

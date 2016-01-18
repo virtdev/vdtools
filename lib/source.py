@@ -20,8 +20,10 @@
 import os
 import ast
 import imp
+import json
 import string
 from lib.log import log_err
+from lib.util import unicode2str
 from inspect import getsourcelines
 
 class Source(object):
@@ -60,15 +62,6 @@ class Source(object):
         for item in buf:
             key, val = item.split('=')
             k = key.strip()
-            v = val.strip()
-            if v.startswith('(') and v.endswith(')'):
-                v = v[1:-1].split(',')
-                if not v:
-                    log_err(self, 'invalid value %s' % str(v))
-                    raise Exception('invalid value')
-                for i in range(len(v)):
-                    v[i] = v[i].strip()
-            else:
-                v = ast.literal_eval(v)
+            v = unicode2str(json.loads(val.strip()))
             ret.update({k:v})
         return ret

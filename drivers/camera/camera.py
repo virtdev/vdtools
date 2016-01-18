@@ -18,32 +18,29 @@
 #      MA 02110-1301, USA.
 
 import pygame
-from lib import mode
 from PIL import Image
 from pygame import camera
+from base64 import b64encode
 from dev.driver import Driver
 from StringIO import StringIO
-from base64 import encodestring
+from lib.mode import MODE_OVP, MODE_SYNC
 
+CAMERA_INDEX = 0
 CAMERA_WIDTH = 640
 CAMERA_HEIGHT = 480
 
 pygame.init()
 pygame.camera.init()
-_camera_index = 0
 
 class Camera(Driver):
     def __init__(self, name=None):
-        Driver.__init__(self, name=name, mode=mode.OVP | mode.MODE_SYNC)
+        Driver.__init__(self, name=name, mode=MODE_OVP | MODE_SYNC, spec={'content':{'type':'image/jpeg;base64'}})
     
     def setup(self):
-        global _camera_index
-        
         cameras = camera.list_cameras()
-        if _camera_index >= len(cameras):
+        if CAMERA_INDEX >= len(cameras):
             raise Exception('no camera')
-        self._cam = camera.Camera(cameras[_camera_index], (CAMERA_WIDTH, CAMERA_HEIGHT))
-        _camera_index += 1
+        self._cam = camera.Camera(cameras[CAMERA_INDEX], (CAMERA_WIDTH, CAMERA_HEIGHT))
         self._cam.start()
     
     def get(self):
@@ -52,4 +49,4 @@ class Camera(Driver):
         buf = pygame.image.tostring(surf, 'RGBA')
         img = Image.fromstring('RGBA', (CAMERA_WIDTH, CAMERA_HEIGHT), buf)
         img.save(res, 'JPEG')
-        return {'File':encodestring(res.getvalue())}
+        return {'content':b64encode(res.getvalue())}

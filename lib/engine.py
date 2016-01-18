@@ -20,26 +20,26 @@
 import zerorpc
 from log import log_err
 from util import zmqaddr
-from fs.attr import Attr
 from fs.data import Data
 from fs.edge import Edge
-from lib.op import OP_OPEN
 from fs.vertex import Vertex
 from threading import Thread
-from lib.util import load_driver
 from dev.manager import Manager
+from lib.util import load_driver
+from fs.attribute import Attribute
 from conf.virtdev import ENGINE_PORT
 from dev.interfaces.lo import device_name
-from lib.mode import MODE_LO, MODE_VIRT, MODE_CLONE
-from fs.attr import ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PROFILE, ATTR_DISPATCHER, ATTR_PARENT, ATTR_TIMEOUT
+from lib.operations import OP_OPEN, OP_CLOSE
+from lib.modes import MODE_LO, MODE_VIRT, MODE_CLONE
+from lib.attributes import ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PROFILE, ATTR_DISPATCHER, ATTR_PARENT, ATTR_TIMEOUT
 
 TYPE_VDEV = 'VDev'
 
 class EnginInterface(object):
     def __init__(self, manager):
-        self._attr = Attr()
         self._data = Data()
         self._edge = Edge()
+        self._attr = Attribute()
         self._vertex = Vertex()
         self._manager = manager
         self._manager.start()
@@ -49,6 +49,12 @@ class EnginInterface(object):
             dev = d.find(name)
             if dev:
                 dev.proc(name, OP_OPEN)
+    
+    def disable(self, name):
+        for d in self._manager.devices:
+            dev = d.find(name)
+            if dev:
+                dev.proc(name, OP_CLOSE)
     
     def create(self, uid, name, mode, vertex, parent, freq, prof, hndl, filt, disp, typ, timeout):
         lo = mode & MODE_LO

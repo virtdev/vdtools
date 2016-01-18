@@ -27,7 +27,7 @@ from threading import Thread
 from lib.loader import Loader
 from lib.util import load_driver
 from conf.virtdev import LO_ADDR, LO_PORT
-from lib.mode import MODE_LO, MODE_PASSIVE, MODE_CLONE, MODE_VIRT
+from lib.modes import MODE_LO, MODE_PASSIVE, MODE_CLONE, MODE_VIRT
 
 def device_name(typ, name, mode=0):
     return '%s_%s_%d' % (typ, name, mode)

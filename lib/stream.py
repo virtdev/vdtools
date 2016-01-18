@@ -21,13 +21,13 @@ import crc
 import struct
 from util import send_pkt, recv_pkt
 
-STREAM_DLE = '@'
-STREAM_STX = '0'
-STREAM_ETX = '1'
-STREAM_CHR = STREAM_DLE + STREAM_DLE
-STREAM_HEAD = STREAM_DLE + STREAM_STX
-STREAM_TAIL = STREAM_DLE + STREAM_ETX
-STREAM_MAX_LEN = 1 << 22
+DLE = '@'
+STX = '0'
+ETX = '1'
+CHR = DLE + DLE
+HEAD = DLE + STX
+TAIL = DLE + ETX
+STREAM_MAX = 1 << 22
 
 def _check(buf):
     if len(buf) < crc.CRC_SIZE:
@@ -37,15 +37,16 @@ def _check(buf):
         return tmp
 
 def put(sock, buf, local=False):
+    buf = str(buf)
     if local:
         send_pkt(sock, buf)
         return
     code = crc.encode(buf)
-    tmp = str(struct.pack('H', code) + buf).split(STREAM_DLE)
-    out = STREAM_HEAD + tmp[0]
+    tmp = str(struct.pack('H', code) + buf).split(DLE)
+    out = HEAD + tmp[0]
     for i in range(1, len(tmp)):
-        out += STREAM_CHR + tmp[i]
-    out += STREAM_TAIL
+        out += CHR + tmp[i]
+    out += TAIL
     sock.send(out)
 
 def get(sock, local=False):
@@ -55,18 +56,18 @@ def get(sock, local=False):
     start = False
     while True:
         ch = sock.recv(1)
-        if ch == STREAM_DLE:
+        if ch == DLE:
             ch = sock.recv(1)
-            if ch == STREAM_DLE:
+            if ch == DLE:
                 if start:
-                    if len(buf) < STREAM_MAX_LEN:
-                        buf += STREAM_DLE
+                    if len(buf) < STREAM_MAX:
+                        buf += DLE
                     else:
                         raise Exception('Invalid length of stream')
-            elif ch == STREAM_STX:
+            elif ch == STX:
                 start = True
                 buf = ''
-            elif ch == STREAM_ETX:
+            elif ch == ETX:
                 if start:
                     out = _check(buf)
                     if out:
@@ -75,7 +76,7 @@ def get(sock, local=False):
                         start = False
                         buf = ''
         elif start:
-            if len(buf) < STREAM_MAX_LEN:
+            if len(buf) < STREAM_MAX:
                 buf += ch
             else:
                 raise Exception('Invalid length of stream')

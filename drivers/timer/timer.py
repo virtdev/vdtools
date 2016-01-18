@@ -23,35 +23,38 @@ from datetime import datetime
 from dev.driver import Driver
 
 PRINT = False
-PATH_TIMER = '/opt/timer'
-
-def get_path(name):
-    return os.path.join(PATH_TIMER, name) 
+PATH = '/opt/timer'
 
 class Timer(Driver):
+    def _get_dir(self):
+        return os.path.join(PATH, self.get_name())
+    
+    def _get_path(self, name):
+        return os.path.join(self._get_dir(), name)
+    
     def setup(self):
-        name = self.get_name()
-        if name:
-            path = get_path(name)
+        if self.get_name():
+            path = self._get_dir()
             if not os.path.exists(path):
                 os.makedirs(path, 0o755)
     
-    def _create(self, name):
-        path = os.path.join(get_path(self.get_name()), name)
+    def _save(self, name):
+        t = str(datetime.utcnow())
+        path = self._get_path(name)
         d = shelve.open(path)
         try:
-            d['start'] =  str(datetime.utcnow())
-            if PRINT:
-                print('Timer: name=%s, time=%s' % (name, d['start']))
-            return True
+            d['t'] = t
         finally:
             d.close()
+        if PRINT:
+            print('Timer: name=%s, time=%s' % (name, t))
+        return True
     
     def put(self, buf):
         args = self.get_args(buf)
         if args and type(args) == dict:
-            name = args.get('Name')
+            name = args.get('name')
             if name:
-                if self._create(name):
-                    args.update({'Timer':self.get_name()})
+                if self._save(name):
+                    args.update({'timer':self.get_name()})
                     return args

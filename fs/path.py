@@ -18,19 +18,16 @@
 #      MA 02110-1301, USA.
 
 import os
-from conf.virtdev import MOUNTPOINT, FS_PATH
+from conf.virtdev import PATH_MOUNTPOINT
 
 DOMAIN = {'vertex':'vertex', 'edge':'edge', 'data':'data', 'attr':'attr', 'temp':'temp'}
 
 def is_local(uid, name):
-    path = os.path.join(FS_PATH, uid, DOMAIN['attr'], name)
+    path = os.path.join(PATH_MOUNTPOINT, uid, DOMAIN['attr'], name)
     return os.path.exists(path)
 
 def load(uid, name='', domain=DOMAIN['data'], sort=False, passthrough=False):
-    if not passthrough:
-        root = MOUNTPOINT
-    else:
-        root = FS_PATH
+    root = PATH_MOUNTPOINT
     if not name and not domain:
         path = os.path.join(root, uid)
     else:

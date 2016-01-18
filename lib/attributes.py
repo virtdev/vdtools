@@ -1,4 +1,4 @@
-#      create.py
+#      attributes.py
 #      
 #      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,16 +17,13 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import sys
-from lib.common import create
+ATTR_MODE = 'mode'
+ATTR_FREQ = 'freq'
+ATTR_FILTER = 'filter'
+ATTR_PARENT = 'parent'
+ATTR_HANDLER = 'handler'
+ATTR_PROFILE = 'profile'
+ATTR_TIMEOUT = 'timeout'
+ATTR_DISPATCHER = 'dispatcher'
 
-def usage():
-    print 'create.py type'
-
-if __name__ == '__main__':
-    argc = len(sys.argv)
-    if argc != 2:
-        usage()
-        sys.exit()
-    name = create(sys.argv[1])
-    print 'create: name=' + name
+ATTRIBUTES = [ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PARENT, ATTR_PROFILE, ATTR_TIMEOUT, ATTR_DISPATCHER]

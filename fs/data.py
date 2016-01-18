@@ -19,11 +19,11 @@
 
 import os
 from path import DOMAIN
-from conf.virtdev import FS_PATH
+from conf.virtdev import PATH_FS
 
 class Data(object):
     def _get_path(self, uid, name, label):
-        return str(os.path.join(FS_PATH, uid, label, name))
+        return str(os.path.join(PATH_FS, uid, label, name))
     
     def initialize(self, uid, name):
         for i in DOMAIN:

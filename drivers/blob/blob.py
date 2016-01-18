@@ -1,4 +1,4 @@
-#      qrdecoder.py
+#      blob.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,44 +17,35 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import zbar
-import Image
+from base64 import b64decode
 from dev.driver import Driver
-from StringIO import StringIO
-from base64 import decodestring
+from textblob import TextBlob
 
 PRINT = False
 
-class QRDecoder(Driver):    
-    def _decode(self, image):
-        buf = decodestring(image)
+class Blob(Driver):    
+    def _get_sentiment(self, text):
+        buf = b64decode(text)
         if buf:
-            f = StringIO(buf)
-            src = Image.open(f)
-            w, h = src.size
-            raw = src.tostring()
-            scanner = zbar.ImageScanner()
-            scanner.parse_config('enable')
-            img = zbar.Image(w, h, 'Y800', raw)
-            scanner.scan(img)
-            for symbol in img:
-                if str(symbol.type) == 'QRCODE':
-                    return str(symbol.data).lower()
+            blob = TextBlob(buf.decode('utf8'))
+            return (blob.sentiment.polarity,  blob.sentiment.subjectivity)
+        else:
+            return (None, None)
     
     def put(self, buf):
         args = self.get_args(buf)
         if args and type(args) == dict:
-            image = args.get('File')
-            if image:
-                url = self._decode(image)
-                if url:
+            text = args.get('content')
+            if text:
+                polarity, subjectivity = self._get_sentiment(text)
+                if polarity != None and subjectivity != None:
                     if PRINT:
-                        print('QRDecoder: url=%s' % url)
-                    ret = {'URL':url}
-                    name = args.get('Name')
+                        print('Blob: polarity=%f, subjectivity=%f' % (polarity, subjectivity))
+                    ret = {'polarity':polarity, 'subjectivity':subjectivity}
+                    name = args.get('name')
                     if name:
-                        ret.update({'Name':name})
-                    timer = args.get('Timer')
+                        ret.update({'name':name})
+                    timer = args.get('timer')
                     if timer:
-                        ret.update({'Timer':timer})
+                        ret.update({'timer':timer})
                     return ret

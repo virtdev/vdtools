@@ -1,4 +1,4 @@
-#      attr.py
+#      attribute.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -18,41 +18,32 @@
 #      MA 02110-1301, USA.
 
 import os
-from path import DOMAIN
-from lib.util import check_profile
+import json
+from lib.attributes import *
+from conf.virtdev import PATH_FS
+from lib.domains import ATTRIBUTE
 from lib.log import log_err, log_get
-from conf.virtdev import FS_PATH, MOUNTPOINT, DEFAULT_UID
-
-ATTR_MODE = 'mode'
-ATTR_FREQ = 'freq'
-ATTR_FILTER = 'filter'
-ATTR_PARENT = 'parent'
-ATTR_HANDLER = 'handler'
-ATTR_PROFILE = 'profile'
-ATTR_TIMEOUT = 'timeout'
-ATTR_DISPATCHER = 'dispatcher'
-
-ATTRIBUTES = [ATTR_MODE, ATTR_FREQ, ATTR_FILTER, ATTR_HANDLER, ATTR_PARENT, ATTR_PROFILE, ATTR_TIMEOUT, ATTR_DISPATCHER]
+from lib.util import unicode2str, DEFAULT_UID
 
 def set_attr(uid, name, attr, val):
     if attr not in ATTRIBUTES:
         return
-    if uid == DEFAULT_UID: 
-        Attr().initialize(uid, name, attr, val)
+    if uid == DEFAULT_UID:
+        Attribute().initialize(uid, name, attr, val)
 
 def get_attr(uid, name, attr):
     ret = ''
     if attr not in ATTRIBUTES:
         return ret
-    path = os.path.join(MOUNTPOINT, uid, DOMAIN['attr'], name, attr)
+    path = os.path.join(PATH_FS, uid, ATTRIBUTE, name, attr)
     if os.path.exists(path):
         with open(path) as f:
             ret = f.read()
     return ret
 
-class Attr(object):
+class Attribute(object):
     def _get_path(self, uid, name):
-        return str(os.path.join(FS_PATH, uid, 'attr', name))
+        return str(os.path.join(PATH_FS, uid, 'attr', name))
     
     def create(self, uid, name):
         path = self._get_path(uid, name)
@@ -74,12 +65,9 @@ class Attr(object):
             log_err(self, 'invalid attribute %s' % str(attr))
             raise Exception(log_get(self,' invalid attribute'))
         if attr == ATTR_PROFILE:
-            tmp = ''
-            for i in val:
-                tmp += '%s=%s\n' % (str(i), str(val[i]))
-            val = tmp
+            val = json.dumps(val)
         self._init_attr(uid, name, attr, val)
-    
+
     def get_profile(self, uid, name):
         name = os.path.join(name, ATTR_PROFILE)
         path = self._get_path(uid, name)
@@ -91,6 +79,7 @@ class Attr(object):
             st = os.fstat(fd)
             buf = os.read(fd, st.st_size)
             if buf:
-                return check_profile(buf.strip().split('\n')) 
+                attr = json.loads(buf)
+                return unicode2str(attr) 
         finally:
             os.close(fd)

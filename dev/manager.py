@@ -21,7 +21,8 @@ from proc.core import Core
 from proc.proc import Proc
 from interfaces.lo import Lo
 from threading import Thread
-from conf.virtdev import PROC_ADDR, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, DEFAULT_UID
+from lib.util import DEFAULT_UID
+from conf.virtdev import PROC_ADDR, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT
 
 class Manager(object):
     def _init_proc(self):
@@ -46,7 +47,7 @@ class Manager(object):
         self._init_dev()
     
     def __init__(self):
-        self.tunnel = None
+        self.channel = None
         self._active = False
         self.uid = DEFAULT_UID
         self._initialize()

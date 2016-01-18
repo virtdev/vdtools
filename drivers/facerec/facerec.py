@@ -21,9 +21,9 @@ import cv2
 import numpy
 from PIL import Image
 from lib.log import log_err
+from base64 import b64decode
 from dev.driver import Driver
 from StringIO import StringIO
-from base64 import decodestring
 
 RESIZE = False
 PATH_CASCADE = '/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml'
@@ -34,7 +34,7 @@ class FaceRec(Driver):
     
     def _recognize(self, image):
         try:
-            buf = decodestring(image)
+            buf = b64decode(image)
             if buf:
                 f = StringIO(buf)
                 img = Image.open(f)
@@ -54,15 +54,15 @@ class FaceRec(Driver):
     def put(self, buf):
         args = self.get_args(buf)
         if args and type(args) == dict:
-            image = args.get('File')
+            image = args.get('content')
             if self._recognize(image):
-                ret = {'Enable':'True'}
+                ret = {'enable':'true'}
             else:
-                ret = {'Enable': 'False'}
-            name = args.get('Name')
+                ret = {'enable': 'false'}
+            name = args.get('name')
             if name:
-                ret.update({'Name':name})
-            timer = args.get('Timer')
+                ret.update({'name':name})
+            timer = args.get('timer')
             if timer:
-                ret.update({'Timer':timer})
+                ret.update({'timer':timer})
             return ret

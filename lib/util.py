@@ -18,20 +18,29 @@
 #      MA 02110-1301, USA.
 
 import os
+import sys
 import ast
 import imp
 import uuid
 import struct
+import commands
+import collections
+from domains import DOMAINS, DATA, ATTRIBUTE
 
 UID_SIZE = 32
-DEFAULT_UID = '0' * UID_SIZE
+DEFAULT_UID = ''
 INFO_FIELDS = ['mode', 'type', 'freq', 'range']
 
 DIR_MODE = 0o755
 FILE_MODE = 0o644
 
 DEVNULL = open(os.devnull, 'wb')
-DRIVER_PATH = os.path.join(os.getcwd(), 'drivers')
+
+_path = commands.getoutput('readlink -f %s' % sys.argv[0])
+_dir = os.path.dirname(_path)
+sys.path.append(_dir)
+DRIVER_PATH = os.path.join(_dir, 'drivers')
+from conf.virtdev import PATH_FS, PATH_MOUNTPOINT
 
 def zmqaddr(addr, port):
     return 'tcp://%s:%d' % (str(addr), int(port))
@@ -111,7 +120,8 @@ def mount_device(uid, name, mode, freq, prof):
 
 def load_driver(typ, name=None):
     try:
-        module = imp.load_source(typ, os.path.join(DRIVER_PATH, '%s.py' % typ.lower()))
+        driver_name = typ.lower()
+        module = imp.load_source(typ, os.path.join(DRIVER_PATH, driver_name, '%s.py' % driver_name))
         if module and hasattr(module, typ):
             driver = getattr(module, typ)
             if driver:
@@ -119,15 +129,7 @@ def load_driver(typ, name=None):
     except:
         pass
 
-def info(typ, mode=0, freq=None, rng=None):
-    ret = {'type':typ, 'mode':mode}
-    if freq:
-        ret.update({'freq':freq})
-    if range:
-        ret.update({'range':rng})
-    return ret
-
-def check_info(buf):
+def device_info(buf):
     try:
         info = ast.literal_eval(buf)
         if type(info) != dict:
@@ -140,24 +142,43 @@ def check_info(buf):
     except:
         pass
 
-def check_profile(buf):
-    prof = {}
-    for item in buf:
-        pair = item.strip().split('=')
-        if len(pair) != 2:
-            raise Exception('invalid profile')
-        if pair[0] == 'type':
-            prof.update({'type':str(pair[1])})
-        elif pair[0] == 'range':
-            r = ast.literal_eval(pair[1])
-            if type(r) != dict:
-                raise Exception('invalid profile')
-            prof.update({'range':r})
-        elif pair[0] == 'index':
-            if pair[1] == 'None':
-                prof.update({'index':None})
+def unicode2str(buf):
+    if isinstance(buf, basestring):
+        return str(buf)
+    elif isinstance(buf, collections.Mapping):
+        return dict(map(unicode2str, buf.iteritems()))
+    elif isinstance(buf, collections.Iterable):
+        return type(buf)(map(unicode2str, buf))
+    else:
+        return buf
+
+def is_local(uid, name):
+    path = os.path.join(PATH_FS, uid, ATTRIBUTE, name)
+    return os.path.exists(path)
+
+def member_list(uid, name='', domain='', sort=False, passthrough=False):
+    if not passthrough:
+        root = PATH_MOUNTPOINT
+    else:
+        root = PATH_FS
+    if not name and not domain:
+        path = os.path.join(root, uid)
+    else:
+        if domain and domain not in DOMAINS:
+            return
+        if passthrough:
+            if domain:
+                domain = DOMAINS[domain]
             else:
-                prof.update({'index':int(pair[1])})
-    if not prof.has_key('type'):
-        raise Exception('invalid profile')
-    return prof
+                domain = DATA
+        path = os.path.join(root, uid, domain, name)
+    if not os.path.exists(path):
+        return
+    if not sort:
+        return os.listdir(path)
+    else:
+        key = lambda f: os.stat(os.path.join(path, f)).st_mtime
+        return sorted(os.listdir(path), key=key)
+
+def device_sync(manager, name, buf):
+    pass

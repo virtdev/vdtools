@@ -1,4 +1,4 @@
-#      combine.py
+#      domains.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -17,22 +17,16 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import sys
-import argparse
-from lib.common import combine
+EDGE = 'e'
+TEMP = 't'
+DATA = 'd'
+VERTEX = 'v'
+ATTRIBUTE = 'a'
 
-def usage():
-    print 'combine.py -t timeout -d device1 device2 ...'
+DOMAIN_EDGE = 'edge'
+DOMAIN_TEMP = 'temp'
+DOMAIN_DATA = 'data'
+DOMAIN_VERTEX = 'vertex'
+DOMAIN_ATTRIBUTE = 'attribute'
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-t', dest='timeout', default=None)
-    parser.add_argument('-d', nargs='*', dest='devices', default=None)
-    res = parser.parse_args(sys.argv[1:])
-    timeout = res.timeout
-    devices = res.devices
-    if not devices or len(devices) < 2:
-        usage()
-        sys.exit()
-    name = combine(devices, timeout)
-    print 'combine: name=' + name
+DOMAINS = {DOMAIN_VERTEX:VERTEX, DOMAIN_EDGE:EDGE, DOMAIN_DATA:DATA, DOMAIN_ATTRIBUTE:ATTRIBUTE, DOMAIN_TEMP:TEMP}

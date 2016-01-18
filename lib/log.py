@@ -1,6 +1,6 @@
 #      log.py
 #      
-#      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
+#      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
 #      This program is free software; you can redistribute it and/or modify
 #      it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
+from datetime import datetime
 from conf.vdtools import DEBUG, LOG_ERR
 
 def _get_name(obj):
@@ -25,13 +26,15 @@ def _get_name(obj):
 def log_get(obj, text):
     return _get_name(obj) + ': ' + str(text)
 
-def log(text):
-    if DEBUG:
-        print(str(text))
+def log(text, time=False, force=False):
+    if DEBUG or force:
+        if time:
+            print(str(text) + '  %s' % str(datetime.utcnow()))
+        else:
+            print(str(text))
 
 def log_err(obj, text):
-    if DEBUG and LOG_ERR:
+    if LOG_ERR:
         if obj:
-            print(log_get(obj, text))
-        else:
-            log(text)
+            text = log_get(obj, text)
+        log(text, time=True, force=True)

@@ -18,12 +18,14 @@
 #      MA 02110-1301, USA.
 
 import os
-from graph import Graph
+import json
 from source import Source
-from lib.log import log_err
-from conf.virtdev import DEFAULT_UID
-from lib.common import combine, create, link
-from fs.attr import ATTR_FILTER, ATTR_HANDLER, ATTR_DISPATCHER, set_attr
+from lib.util import DEFAULT_UID
+from fs.attribute import set_attr
+from lib.log import log_err, log_get
+from lib.common import combine, create, clone, link
+from lib.attributes import ATTR_FILTER, ATTR_HANDLER, ATTR_DISPATCHER
+from dgl import DGL, get_type, get_identity, get_image, is_identity, is_image
 
 TIMEOUT = 5 # seconds
 TYPE_VDEV = 'VDev'
@@ -31,100 +33,127 @@ TYPE_VDEV = 'VDev'
 class Parser(object):
     def __init__(self, uid=DEFAULT_UID):
         self._uid = uid
-        self._graph = Graph()
+        self._dgl = DGL()
         self._source = Source()
     
-    def _parse(self, path, build=False):
-        names = {}
-        virtual = []
-        devices = []
-        name = os.path.join(path, 'graph')
-        v, e = self._graph.parse(name)
+    def _create(self, name, member, parent, timeout, devices, child=False):
+        if name in devices:
+            return devices[name]
+        
+        if is_identity(name):
+            identity = get_identity(name)
+            devices.update({name:identity})
+            return identity
+        elif is_image(name):
+            image = get_image(name)
+            if get_type(image) == TYPE_VDEV:
+                log_err(self, 'invalid type')
+                raise Exception(log_get(self, 'invalid type'))
+            pid = devices.get(image)
+            if not pid:
+                self._create(image, member, parent, timeout, devices)
+                pid = devices.get(image)
+                if not pid:
+                    log_err(self, 'failed to create')
+                    raise Exception(log_get(self, 'failed to create'))
+            identity = clone(pid, uid=self._uid)
+            devices.update({name:identity})
+            return identity
+        
+        members = None
+        typ = get_type(name)
+        if not typ:
+            log_err(self, 'invalid graph')
+            raise Exception(log_get(self, 'invalid graph'))
+        
+        if typ == TYPE_VDEV:
+            if child:
+                log_err(self, 'invalid graph')
+                raise Exception(log_get(self, 'invalid graph'))
+            members = member.get(name)
+            if members and type(members) != list:
+                log_err(self, 'invalid graph')
+                raise Exception(log_get(self, 'invalid graph'))
+        
+        if not members:
+            identity = create(typ, uid=self._uid, parent=parent.get(name))
+        else:
+            vertex = []
+            for j in members:
+                identity = self._creat(j, member, parent, timeout, devices, child=True)
+                if not identity:
+                    log_err(self, 'invalid identity')
+                    raise Exception(log_get(self, 'invalid identity'))
+                vertex.append(identity)
+            t = timeout.get(name)
+            if not t or type(t) not in (int, float):
+                t = TIMEOUT
+            identity = combine(vertex, t, uid=self._uid)
+            if not identity:
+                log_err(self, 'failed to combine')
+                raise Exception(log_get(self, 'failed to combine'))
+        devices.update({name:identity})
+        return identity
+    
+    def _parse(self, dirname, build=False, output=False):
+        devices = {}
+        path = os.path.join(dirname, 'graph')
+        v, e = self._dgl.parse(path)
         if not v or not e:
             log_err(self, 'invalid graph')
             return
         
-        path_device = os.path.join(path, 'device')
-        source_device = self._source.get_val(path_device)
-        path_timeout =  os.path.join(path, 'timeout')
-        source_timeout = self._source.get_val(path_timeout)
+        path = os.path.join(dirname, 'member')
+        member = self._source.get_val(path)
+            
+        path = os.path.join(dirname, 'parent')
+        parent = self._source.get_val(path)
+        
+        path =  os.path.join(dirname, 'timeout')
+        timeout = self._source.get_val(path)
+        
         for i in v:
-            if self._graph.has_type(i):
-                members = None
-                typ = self._graph.get_type(i)
-                
-                if not typ:
-                    log_err(self, 'invalid graph')
-                    return
-                
-                if i in devices:
-                    continue
-                
-                if typ == TYPE_VDEV:
-                    members = source_device.get(i)
-                    if members and type(members) != list:
-                        log_err(self, 'invalid graph')
-                        return
-                
-                n = None
-                if not members:
-                    if build:
-                        n = create(typ, uid=self._uid)
-                else:
-                    vertex = []
-                    timeout = source_timeout.get(i)
-                    if not timeout or type(timeout) not in (int, float):
-                        timeout = TIMEOUT
-                    for j in members:
-                        if self._graph.has_type(j):
-                            typ = self._graph.get_type(j)
-                            if build:
-                                n = create(typ, uid=self._uid)
-                            vertex.append(n)
-                        else:
-                            vertex.append(self._graph.get_identity(j))
-                    if build:
-                        n = combine(vertex, timeout, uid=self._uid)
-                    virtual.append(i)
-                
-                devices.append(i)
-                names.update({i:n})
-            else:
-                names.update({i:self._get_identity(i)})
+            if build:
+                self._create(i, member, parent, timeout, devices)
         
-        path_handler = os.path.join(path, 'handler.py')
-        handlers = self._source.get_func(path_handler)
-        if handlers and build:
-            for i in handlers:
-                if i in devices:
-                    set_attr(self._uid, names[i], ATTR_HANDLER, handlers[i])
+        path = os.path.join(dirname, 'handler.py')
+        handlers = self._source.get_func(path)
         
-        path_filter = os.path.join(path, 'filter.py')
-        filters = self._source.get_func(path_filter)
-        if filters and build:
-            for i in filters:
-                if i in virtual:
-                    set_attr(self._uid, names[i], ATTR_FILTER, filters[i])
+        path = os.path.join(dirname, 'filter.py')
+        filters = self._source.get_func(path)
         
-        path_dispatcher = os.path.join(path, 'dispatcher.py')
-        dispatchers = self._source.get_func(path_dispatcher)
-        if dispatchers and build:
-            for i in dispatchers:
-                if i in devices:
-                    set_attr(self._uid, names[i], ATTR_DISPATCHER, dispatchers[i])
-        
-        for i in e:
-            for j in e[i]:
-                if j != i:
-                    if not names.has_key(i) or not names.has_key(j):
-                        log_err(self, 'invalid graph')
-                        return
-                    if build:
-                        link(names[i], names[j], uid=self._uid)
-        return True
+        path = os.path.join(dirname, 'dispatcher.py')
+        dispatchers = self._source.get_func(path)
+            
+        if build:
+            if handlers:
+                for i in handlers:
+                    if i in devices and not is_image(i) and not is_identity(i):
+                        set_attr(self._uid, devices[i], ATTR_HANDLER, handlers[i])
+            
+            if filters:
+                for i in filters:
+                    if i in devices and not is_image(i) and not is_identity(i):
+                        set_attr(self._uid, devices[i], ATTR_FILTER, filters[i])
+            
+            if dispatchers:
+                for i in dispatchers:
+                    if i in devices and not is_image(i) and not is_identity(i):
+                        set_attr(self._uid, devices[i], ATTR_DISPATCHER, dispatchers[i])
+            
+            for i in e:
+                for j in e[i]:
+                    if j != i:
+                        if not devices.has_key(i) or not devices.has_key(j):
+                            log_err(self, 'invalid graph')
+                            return
+                        link(devices[i], devices[j], uid=self._uid)
+            
+            if output and devices:
+                return json.dumps(devices)
     
     def parse(self, path):
-        return self._parse(path, build=False)
+        return self._parse(path)
     
     def build(self, path):
-        return self._parse(path, build=True)
+        return self._parse(path, build=True, output=True)

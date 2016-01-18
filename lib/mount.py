@@ -20,7 +20,8 @@
 import os
 from lib.engine import Engine
 from lib.util import close_port
-from conf.virtdev import LO_PORT, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, MOUNTPOINT
+from conf.path import PATH_MOUNTPOINT
+from conf.virtdev import LO_PORT, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT
 
 def _clean():
     close_port(LO_PORT)
@@ -29,8 +30,8 @@ def _clean():
     close_port(DISPATCHER_PORT)
 
 def mount():
-    if not os.path.exists(MOUNTPOINT):
-        os.makedirs(MOUNTPOINT, 0o755)
+    if not os.path.exists(PATH_MOUNTPOINT):
+        os.makedirs(PATH_MOUNTPOINT, 0o755)
     _clean()
     engine = Engine()
     engine.start()

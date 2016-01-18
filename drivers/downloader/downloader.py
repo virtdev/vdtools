@@ -46,17 +46,17 @@ class Downloader(Driver):
     def put(self, buf):
         args = self.get_args(buf)
         if args and type(args) == dict:
-            url = args.get('URL')
-            name = args.get('Name')
+            url = args.get('url')
+            name = args.get('name')
             if url:
                 if self._download(url):
                     if name:
-                        ret = {'Name':name, 'Enable':'True'}
+                        ret = {'name':name, 'enable':'true'}
                     else:
-                        ret = {'Enable':'True'}
-                    timer = args.get('Timer')
+                        ret = {'enable':'true'}
+                    timer = args.get('timer')
                     if timer:
-                        ret.update({'Timer':timer})
+                        ret.update({'timer':timer})
                     return ret
                     
         else:

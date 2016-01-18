@@ -19,17 +19,17 @@
 
 import os
 from path import DOMAIN
-from conf.virtdev import FS_PATH, MOUNTPOINT
+from conf.virtdev import PATH_FS
 
 def get_dir(uid, name):
-    return os.path.join(MOUNTPOINT, uid, DOMAIN['edge'], name)
+    return os.path.join(PATH_FS, uid, DOMAIN['edge'], name)
 
 class Edge(object):
     def _get_path(self, uid, edge, hidden):
         if not hidden:
-            return str(os.path.join(FS_PATH, uid, 'edge', edge[0], edge[1]))
+            return str(os.path.join(PATH_FS, uid, 'edge', edge[0], edge[1]))
         else:
-            return str(os.path.join(FS_PATH, uid, 'edge', edge[0], '.' + edge[1]))
+            return str(os.path.join(PATH_FS, uid, 'edge', edge[0], '.' + edge[1]))
     
     def initialize(self, uid, edge, hidden=False):
         path = self._get_path(uid, edge, hidden)
