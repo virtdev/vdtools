@@ -18,11 +18,12 @@
 #      MA 02110-1301, USA.
 
 import os
+from lib.domains import VERTEX
 from conf.virtdev import PATH_FS
 
 class Vertex(object):
     def _get_path(self, uid, name, vertex):
-        return str(os.path.join(PATH_FS, uid, 'vertex', name, vertex))
+        return str(os.path.join(PATH_FS, uid, VERTEX, name, vertex))
     
     def initialize(self, uid, name, vertex):
         for i in vertex:

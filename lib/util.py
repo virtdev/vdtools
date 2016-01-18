@@ -25,7 +25,7 @@ import uuid
 import struct
 import commands
 import collections
-from domains import DOMAINS, DATA, ATTRIBUTE
+from domains import DOMAINS, ATTRIBUTE, DOMAIN_DATA
 
 UID_SIZE = 32
 DEFAULT_UID = ''
@@ -156,22 +156,15 @@ def is_local(uid, name):
     path = os.path.join(PATH_FS, uid, ATTRIBUTE, name)
     return os.path.exists(path)
 
-def member_list(uid, name='', domain='', sort=False, passthrough=False):
-    if not passthrough:
-        root = PATH_MOUNTPOINT
-    else:
-        root = PATH_FS
+def member_list(uid, name='', domain='', sort=False):
     if not name and not domain:
-        path = os.path.join(root, uid)
+        path = os.path.join(PATH_MOUNTPOINT, uid)
     else:
-        if domain and domain not in DOMAINS:
+        if not domain:
+            domain = DOMAIN_DATA
+        if not DOMAINS.get(domain):
             return
-        if passthrough:
-            if domain:
-                domain = DOMAINS[domain]
-            else:
-                domain = DATA
-        path = os.path.join(root, uid, domain, name)
+        path = os.path.join(PATH_MOUNTPOINT, uid, DOMAINS[domain], name)
     if not os.path.exists(path):
         return
     if not sort:

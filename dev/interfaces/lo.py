@@ -20,13 +20,13 @@
 import socket
 from lib import stream
 from dev.udi import UDI
-from fs.path import load
 from random import randint
 from lib.log import log_err
 from threading import Thread
 from lib.loader import Loader
-from lib.util import load_driver
+from lib.domains import DOMAIN_DATA
 from conf.virtdev import LO_ADDR, LO_PORT
+from lib.util import load_driver, member_list
 from lib.modes import MODE_LO, MODE_PASSIVE, MODE_CLONE, MODE_VIRT
 
 def device_name(typ, name, mode=0):
@@ -118,7 +118,7 @@ class Lo(UDI):
         device_list = []
         if not self._active:
             self._active = True
-            names = load(self._uid, sort=True)
+            names = member_list(self._uid, sort=True, domain=DOMAIN_DATA)
             if names:
                 for name in names:
                     device = self._get_device(name)
@@ -129,7 +129,7 @@ class Lo(UDI):
     def connect(self, device):
         return (connect(device), True)
     
-    def get_passive(self):
+    def get_passive_device(self):
         if not self._lo:
             return
         keys = self._lo.keys()

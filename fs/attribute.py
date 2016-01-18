@@ -43,7 +43,7 @@ def get_attr(uid, name, attr):
 
 class Attribute(object):
     def _get_path(self, uid, name):
-        return str(os.path.join(PATH_FS, uid, 'attr', name))
+        return str(os.path.join(PATH_FS, uid, ATTRIBUTE, name))
     
     def create(self, uid, name):
         path = self._get_path(uid, name)

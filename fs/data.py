@@ -18,7 +18,7 @@
 #      MA 02110-1301, USA.
 
 import os
-from path import DOMAIN
+from lib.domains import DOMAINS
 from conf.virtdev import PATH_FS
 
 class Data(object):
@@ -26,7 +26,7 @@ class Data(object):
         return str(os.path.join(PATH_FS, uid, label, name))
     
     def initialize(self, uid, name):
-        for i in DOMAIN:
-            path = self._get_path(uid, name, DOMAIN[i])
+        for i in DOMAINS:
+            path = self._get_path(uid, name, DOMAINS[i])
             if not os.path.exists(path):
                 os.makedirs(path, 0o755)

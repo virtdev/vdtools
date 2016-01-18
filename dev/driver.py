@@ -20,18 +20,35 @@
 import ast
 from lib import stream
 from threading import Thread
-from lib.modes import MODE_IV, MODE_LO
+from lib.modes import MODE_IV, MODE_LO, MODE_POLL, MODE_TRIG, MODE_PASSIVE
 from dev.req import REQ_OPEN, REQ_CLOSE, REQ_GET, REQ_PUT, REQ_MOUNT, parse
+
+FREQ_MIN = 1 # HZ
+FREQ_MAX = 100 # HZ
+
+def has_freq(mode):
+    return mode & MODE_POLL or (mode & MODE_TRIG and mode & MODE_PASSIVE)
 
 class Driver(object):
     def __init__(self, name=None, mode=MODE_IV, freq=None, spec=None):
         self.__name = name
         self.__mode = mode
-        self.__freq = freq
         self.__spec = spec
         self.__sock = None
         self.__index = None
         self.__thread = None
+        self._init_freq(freq)
+    
+    def _init_freq(self, freq):
+        self.__freq = freq
+        if not freq:
+            if has_freq(self.__mode):
+                self.__freq = FREQ_MIN
+        else:
+            if freq > FREQ_MAX:
+                self.__freq = FREQ_MAX
+            if freq < FREQ_MIN:
+                self.__freq = FREQ_MIN
     
     def __str__(self):
         return self.__class__.__name__

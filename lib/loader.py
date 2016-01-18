@@ -19,20 +19,21 @@
 
 import os
 import json
-from fs.path import DOMAIN
 from util import unicode2str
-from conf.path import PATH_MOUNTPOINT
+from lib.domains import ATTRIBUTE
 from lib.attributes import ATTR_PROFILE
+from conf.virtdev import PATH_MOUNTPOINT
 
 class Loader(object):
     def __init__(self, uid):
         self._uid = uid
     
     def _get_path(self, name, attr):
-        return os.path.join(PATH_MOUNTPOINT, self._uid, DOMAIN['attr'], name, attr)
+        return os.path.join(PATH_MOUNTPOINT, self._uid, ATTRIBUTE, name, attr)
     
     def _read(self, name, attr):
         path = self._get_path(name, attr)
+        print 'loader: read, path=%s' % path
         try:
             os.stat(path)
         except:

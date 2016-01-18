@@ -20,8 +20,7 @@
 import os
 from lib.engine import Engine
 from lib.util import close_port
-from conf.path import PATH_MOUNTPOINT
-from conf.virtdev import LO_PORT, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT
+from conf.virtdev import LO_PORT, FILTER_PORT, HANDLER_PORT, DISPATCHER_PORT, PATH_MOUNTPOINT
 
 def _clean():
     close_port(LO_PORT)
