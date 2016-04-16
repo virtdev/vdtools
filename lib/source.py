@@ -49,7 +49,7 @@ class Source(object):
             src = self._get_func(path, name)
             if not src:
                 log_err(self, 'invalid function %s' % name)
-                raise Exception('invalid function')
+                raise Exception('Error: invalid function')
             ret.update({name:src})
         return ret
     

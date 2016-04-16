@@ -20,7 +20,7 @@
 import os
 from base64 import b64encode
 from dev.driver import Driver
-from lib.mode import MODE_OVP, MODE_SWITCH
+from lib.modes import MODE_OVP, MODE_SWITCH
 
 PATH_FILELOADER = '/opt/fileloader'
 

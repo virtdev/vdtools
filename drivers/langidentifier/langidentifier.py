@@ -1,6 +1,6 @@
-#      server.py
+#      langidentifier.py
 #      
-#      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
+#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
 #      This program is free software; you can redistribute it and/or modify
 #      it under the terms of the GNU General Public License as published by
@@ -17,18 +17,26 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import zerorpc
-from util import zmqaddr
-from parser import Parser
-from conf.vdtools import BUILDER_PORT
+import langid
+from base64 import b64decode
+from dev.driver import Driver, check_output
 
-class ServerHandler(object):
-    def build(self, uid, path):
-        parser = Parser(uid)
-        return parser.build(path)
+PRINT = False
 
-class Server(object):
-    def run(self):
-        srv = zerorpc.Server(ServerHandler())
-        srv.bind(zmqaddr('0.0.0.0', BUILDER_PORT))
-        srv.run()
+class LangIdentifiyer(Driver):
+    def _get_lang(self, text):
+        buf = b64decode(text)
+        if buf:
+            doc = buf.decode('utf8')
+            lang = langid.classify(doc)[0]
+            if PRINT:
+                print('LangIdentifier: lang=%s' % lang)
+            return lang
+    
+    @check_output
+    def put(self, args):
+        text = args.get('content')
+        if text:
+            lang = self._get_lang(text)
+            if lang:
+                return {'lang':lang}

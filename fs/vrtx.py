@@ -1,6 +1,6 @@
-#      server.py
+#      vrtx.py
 #      
-#      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
+#      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
 #      This program is free software; you can redistribute it and/or modify
 #      it under the terms of the GNU General Public License as published by
@@ -17,18 +17,17 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import zerorpc
-from util import zmqaddr
-from parser import Parser
-from conf.vdtools import BUILDER_PORT
+import os
+from lib.fields import VRTX
+from conf.virtdev import PATH_VAR
 
-class ServerHandler(object):
-    def build(self, uid, path):
-        parser = Parser(uid)
-        return parser.build(path)
-
-class Server(object):
-    def run(self):
-        srv = zerorpc.Server(ServerHandler())
-        srv.bind(zmqaddr('0.0.0.0', BUILDER_PORT))
-        srv.run()
+class Vrtx(object):
+    def _get_path(self, uid, name, vrtx):
+        return str(os.path.join(PATH_VAR, uid, VRTX, name, vrtx))
+    
+    def initialize(self, uid, name, vrtx):
+        for i in vrtx:
+            path = self._get_path(uid, name, i)
+            if not os.path.exists(path):
+                with open(path, 'w') as _:
+                    pass

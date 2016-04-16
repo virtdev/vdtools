@@ -22,12 +22,13 @@ from log import log_err
 from util import zmqaddr
 from fs.data import Data
 from fs.edge import Edge
-from fs.vertex import Vertex
+from fs.vrtx import Vrtx
+from fs.attr import Attr
 from threading import Thread
+from lib.loader import Loader
 from dev.manager import Manager
 from lib.util import load_driver
-from fs.attribute import Attribute
-from conf.virtdev import ENGINE_PORT
+from conf.vdtools import ENGINE_PORT
 from dev.interfaces.lo import device_name
 from lib.operations import OP_OPEN, OP_CLOSE
 from lib.modes import MODE_LO, MODE_VIRT, MODE_CLONE
@@ -39,8 +40,8 @@ class EnginInterface(object):
     def __init__(self, manager):
         self._data = Data()
         self._edge = Edge()
-        self._attr = Attribute()
-        self._vertex = Vertex()
+        self._attr = Attr()
+        self._vrtx = Vrtx()
         self._manager = manager
         self._manager.start()
     
@@ -56,17 +57,17 @@ class EnginInterface(object):
             if dev:
                 dev.proc(name, OP_CLOSE)
     
-    def create(self, uid, name, mode, vertex, parent, freq, prof, hndl, filt, disp, typ, timeout):
+    def create(self, uid, name, mode, vrtx, parent, freq, prof, hndl, filt, disp, typ, timeout):
         lo = mode & MODE_LO
         if lo and not typ:
             log_err(self, 'failed to create device, invalid device')
-            raise Exception('ailed to create device')
+            raise Exception('Error: failed to create device')
         
         if mode & MODE_CLONE:
             if not parent:
                 log_err(self, 'failed to create device, no parent')
-                raise Exception('failed to create device')
-            prof = self._attr.get_profile(uid, parent)
+                raise Exception('Error: failed to create device')
+            prof = Loader(uid).get_profile(parent)
             typ = prof['type']
         
         if not mode & MODE_VIRT:
@@ -80,7 +81,7 @@ class EnginInterface(object):
                 driver = load_driver(typ)
                 if not driver:
                     log_err(self, 'failed to create device')
-                    raise Exception('failed to create device')
+                    raise Exception('Error: failed to create device')
                 if mode & MODE_CLONE:
                     mode = driver.get_mode() | MODE_CLONE
                 else:
@@ -112,12 +113,12 @@ class EnginInterface(object):
         if timeout:
             self._attr.initialize(uid, name, ATTR_TIMEOUT, timeout)
         
-        if vertex:
+        if vrtx:
             if mode & MODE_CLONE:
                 log_err(self, 'failed to create device, invalid vertex')
-                raise Exception('failed to create device')
-            self._vertex.initialize(uid, name, vertex)
-            for v in vertex:
+                raise Exception('Error: failed to create device')
+            self._vrtx.initialize(uid, name, vrtx)
+            for v in vrtx:
                 self._edge.initialize(uid, (v, name), hidden=True)
         
         if lo:

@@ -24,7 +24,6 @@ from random import randint
 from lib.log import log_err
 from threading import Thread
 from lib.loader import Loader
-from lib.domains import DOMAIN_DATA
 from conf.virtdev import LO_ADDR, LO_PORT
 from lib.util import load_driver, member_list
 from lib.modes import MODE_LO, MODE_PASSIVE, MODE_CLONE, MODE_VIRT
@@ -118,7 +117,7 @@ class Lo(UDI):
         device_list = []
         if not self._active:
             self._active = True
-            names = member_list(self._uid, sort=True, domain=DOMAIN_DATA)
+            names = member_list(self._uid, sort=True)
             if names:
                 for name in names:
                     device = self._get_device(name)

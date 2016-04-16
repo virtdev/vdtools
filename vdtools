@@ -21,3 +21,5 @@ if __name__ == '__main__':
         mount()
     elif args.server:
         Server().run()
+    else:
+        parser.print_help()

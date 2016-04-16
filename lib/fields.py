@@ -1,6 +1,6 @@
-#      server.py
+#      fields.py
 #      
-#      Copyright (C) 2015 Yi-Wei Ci <ciyiwei@hotmail.com>
+#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
 #      This program is free software; you can redistribute it and/or modify
 #      it under the terms of the GNU General Public License as published by
@@ -17,18 +17,16 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #      MA 02110-1301, USA.
 
-import zerorpc
-from util import zmqaddr
-from parser import Parser
-from conf.vdtools import BUILDER_PORT
+EDGE = 'e'
+TEMP = 't'
+DATA = 'd'
+VRTX = 'v'
+ATTR = 'a'
 
-class ServerHandler(object):
-    def build(self, uid, path):
-        parser = Parser(uid)
-        return parser.build(path)
+FIELD_EDGE = 'edge'
+FIELD_TEMP = 'temp'
+FIELD_DATA = 'data'
+FIELD_VRTX = 'vrtx'
+FIELD_ATTR = 'attr'
 
-class Server(object):
-    def run(self):
-        srv = zerorpc.Server(ServerHandler())
-        srv.bind(zmqaddr('0.0.0.0', BUILDER_PORT))
-        srv.run()
+FIELDS = {FIELD_VRTX:VRTX, FIELD_EDGE:EDGE, FIELD_DATA:DATA, FIELD_ATTR:ATTR, FIELD_TEMP:TEMP}

@@ -19,17 +19,17 @@
 
 import os
 import json
+from lib.fields import ATTR
 from util import unicode2str
-from lib.domains import ATTRIBUTE
+from conf.virtdev import PATH_MNT
 from lib.attributes import ATTR_PROFILE
-from conf.virtdev import PATH_MOUNTPOINT
 
 class Loader(object):
     def __init__(self, uid):
         self._uid = uid
     
     def _get_path(self, name, attr):
-        return os.path.join(PATH_MOUNTPOINT, self._uid, ATTRIBUTE, name, attr)
+        return os.path.join(PATH_MNT, self._uid, ATTR, name, attr)
     
     def _read(self, name, attr):
         path = self._get_path(name, attr)

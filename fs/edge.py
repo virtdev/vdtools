@@ -18,18 +18,18 @@
 #      MA 02110-1301, USA.
 
 import os
-from lib.domains import EDGE
-from conf.virtdev import PATH_FS
+from lib.fields import EDGE
+from conf.virtdev import PATH_VAR
 
 def get_dir(uid, name):
-    return os.path.join(PATH_FS, uid, EDGE, name)
+    return os.path.join(PATH_VAR, uid, EDGE, name)
 
 class Edge(object):
     def _get_path(self, uid, edge, hidden):
         if not hidden:
-            return str(os.path.join(PATH_FS, uid, EDGE, edge[0], edge[1]))
+            return str(os.path.join(PATH_VAR, uid, EDGE, edge[0], edge[1]))
         else:
-            return str(os.path.join(PATH_FS, uid, EDGE, edge[0], '.' + edge[1]))
+            return str(os.path.join(PATH_VAR, uid, EDGE, edge[0], '.' + edge[1]))
     
     def initialize(self, uid, edge, hidden=False):
         path = self._get_path(uid, edge, hidden)

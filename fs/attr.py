@@ -1,4 +1,4 @@
-#      attribute.py
+#      attr.py
 #      
 #      Copyright (C) 2014 Yi-Wei Ci <ciyiwei@hotmail.com>
 #      
@@ -19,35 +19,25 @@
 
 import os
 import json
-from lib.attributes import *
-from conf.virtdev import PATH_FS
-from lib.domains import ATTRIBUTE
+from lib.fields import ATTR
+from conf.virtdev import PATH_VAR
 from lib.log import log_err, log_get
-from lib.util import unicode2str, DEFAULT_UID
+from lib.util import DEFAULT_UID, FILE_MODE
+from lib.attributes import ATTRIBUTES, ATTR_PROFILE
 
 def set_attr(uid, name, attr, val):
     if attr not in ATTRIBUTES:
         return
     if uid == DEFAULT_UID:
-        Attribute().initialize(uid, name, attr, val)
+        Attr().initialize(uid, name, attr, val)
 
-def get_attr(uid, name, attr):
-    ret = ''
-    if attr not in ATTRIBUTES:
-        return ret
-    path = os.path.join(PATH_FS, uid, ATTRIBUTE, name, attr)
-    if os.path.exists(path):
-        with open(path) as f:
-            ret = f.read()
-    return ret
-
-class Attribute(object):
+class Attr(object):
     def _get_path(self, uid, name):
-        return str(os.path.join(PATH_FS, uid, ATTRIBUTE, name))
+        return str(os.path.join(PATH_VAR, uid, ATTR, name))
     
     def create(self, uid, name):
         path = self._get_path(uid, name)
-        return os.open(path, os.O_RDWR | os.O_CREAT, 0644)
+        return os.open(path, os.O_RDWR | os.O_CREAT, FILE_MODE)
     
     def _release(self, uid, name, fh, force=False):
         os.close(fh)
@@ -63,23 +53,7 @@ class Attribute(object):
     def initialize(self, uid, name, attr, val):
         if attr not in ATTRIBUTES:
             log_err(self, 'invalid attribute %s' % str(attr))
-            raise Exception(log_get(self,' invalid attribute'))
+            raise Exception(log_get(self, 'invalid attribute'))
         if attr == ATTR_PROFILE:
             val = json.dumps(val)
         self._init_attr(uid, name, attr, val)
-
-    def get_profile(self, uid, name):
-        name = os.path.join(name, ATTR_PROFILE)
-        path = self._get_path(uid, name)
-        fd = os.open(path, os.O_RDONLY)
-        if not fd:
-            log_err(self, 'failed to get profile')
-            raise Exception(log_get(self, 'failed to get profile'))
-        try:
-            st = os.fstat(fd)
-            buf = os.read(fd, st.st_size)
-            if buf:
-                attr = json.loads(buf)
-                return unicode2str(attr) 
-        finally:
-            os.close(fd)

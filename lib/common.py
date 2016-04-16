@@ -22,9 +22,10 @@ import uuid
 import xattr
 import zerorpc
 from fs import edge
+from conf.virtdev import PATH_MNT
 from lib.util import DEFAULT_UID, zmqaddr
+from conf.vdtools import PATH_VDEV, ENGINE_PORT
 from lib.operations import OP_ENABLE, OP_DISABLE
-from conf.virtdev import PATH_MOUNTPOINT, VDFS, ENGINE_PORT
 from lib.modes import MODE_VIRT, MODE_VISI, MODE_CLONE, MODE_LO
 
 def check_uuid(identity):
@@ -50,7 +51,7 @@ def create(typ=None, uid=DEFAULT_UID, parent=None):
         attr['type'] = typ
         if parent:
             attr['parent'] = parent
-        path = os.path.join(VDFS, uid)
+        path = os.path.join(PATH_VDEV, uid)
         name = xattr.getxattr(path, 'create:%s' % str(attr))
     return name
 
@@ -64,23 +65,23 @@ def clone(parent, uid=DEFAULT_UID):
         cli.close()
     else:
         attr = {'parent':parent}
-        path = os.path.join(VDFS, uid)
+        path = os.path.join(PATH_VDEV, uid)
         name = xattr.getxattr(path, 'clone:%s' % str(attr))
     return name
 
-def combine(vertex, timeout, uid=DEFAULT_UID):
+def combine(vrtx, timeout, uid=DEFAULT_UID):
     if uid == DEFAULT_UID:
         mode = MODE_VIRT
         name = uuid.uuid4().hex
         cli = zerorpc.Client()
         cli.connect(zmqaddr('127.0.0.1', ENGINE_PORT))
-        cli.create(uid, name, mode, vertex, None, None, None, None, None, None, None, timeout)
+        cli.create(uid, name, mode, vrtx, None, None, None, None, None, None, None, timeout)
         cli.close()
     else:
         attr = {}
-        attr['vertex'] = vertex
+        attr['vertex'] = vrtx
         attr['timeout'] = timeout
-        path = os.path.join(VDFS, uid)
+        path = os.path.join(PATH_VDEV, uid)
         name = xattr.getxattr(path, 'combine:%s' % str(attr))
     return name
 
@@ -91,7 +92,7 @@ def enable(name, uid=DEFAULT_UID):
         cli.enable(name)
         cli.close()
     else:
-        path = os.path.join(VDFS, uid, name)
+        path = os.path.join(PATH_VDEV, uid, name)
         xattr.setxattr(path, OP_ENABLE, '')
 
 def disable(name, uid=DEFAULT_UID):
@@ -101,7 +102,7 @@ def disable(name, uid=DEFAULT_UID):
         cli.disable(name)
         cli.close()
     else:
-        path = os.path.join(VDFS, uid, name)
+        path = os.path.join(PATH_VDEV, uid, name)
         xattr.setxattr(path, OP_DISABLE, '')
 
 def link(src, dest, uid=DEFAULT_UID):
@@ -111,9 +112,9 @@ def link(src, dest, uid=DEFAULT_UID):
     if uid == DEFAULT_UID:
         path = edge.get_dir(uid, src)
     else:
-        path = os.path.join(VDFS, uid, 'edge', src)
+        path = os.path.join(PATH_VDEV, uid, 'edge', src)
     os.system('touch %s' % os.path.join(path, dest))
     return True
 
 def clean():
-    os.system('rm -rf %s' % PATH_MOUNTPOINT)
+    os.system('rm -rf %s' % PATH_MNT)

@@ -25,22 +25,21 @@ import uuid
 import struct
 import commands
 import collections
-from domains import DOMAINS, ATTRIBUTE, DOMAIN_DATA
+from fields import FIELDS, FIELD_DATA, ATTR
 
 UID_SIZE = 32
 DEFAULT_UID = ''
-INFO_FIELDS = ['mode', 'type', 'freq', 'range']
-
 DIR_MODE = 0o755
 FILE_MODE = 0o644
 
 DEVNULL = open(os.devnull, 'wb')
+INFO = ['mode', 'type', 'freq', 'range']
 
 _path = commands.getoutput('readlink -f %s' % sys.argv[0])
 _dir = os.path.dirname(_path)
 sys.path.append(_dir)
 DRIVER_PATH = os.path.join(_dir, 'drivers')
-from conf.virtdev import PATH_FS, PATH_MOUNTPOINT
+from conf.virtdev import PATH_VAR
 
 def zmqaddr(addr, port):
     return 'tcp://%s:%d' % (str(addr), int(port))
@@ -64,7 +63,7 @@ def recv_bytes(sock, length):
     while length > 0:
         buf = sock.recv(min(length, 2048))
         if not buf:
-            raise Exception('failed to receive')
+            raise Exception('Error: failed to receive')
         ret.append(buf)
         length -= len(buf) 
     return ''.join(ret)
@@ -136,7 +135,7 @@ def device_info(buf):
             return
         for i in info:
             for j in info[i].keys():
-                if j not in INFO_FIELDS:
+                if j not in INFO:
                     return
         return info
     except:
@@ -153,18 +152,18 @@ def unicode2str(buf):
         return buf
 
 def is_local(uid, name):
-    path = os.path.join(PATH_FS, uid, ATTRIBUTE, name)
+    path = os.path.join(PATH_VAR, uid, ATTR, name)
     return os.path.exists(path)
 
-def member_list(uid, name='', domain='', sort=False):
-    if not name and not domain:
-        path = os.path.join(PATH_MOUNTPOINT, uid)
+def member_list(uid, name='', field='', sort=False):
+    if not name and not field:
+        path = os.path.join(PATH_VAR, uid)
     else:
-        if not domain:
-            domain = DOMAIN_DATA
-        if not DOMAINS.get(domain):
+        if not field:
+            field = FIELD_DATA
+        elif not FIELDS.get(field):
             return
-        path = os.path.join(PATH_MOUNTPOINT, uid, DOMAINS[domain], name)
+        path = os.path.join(PATH_VAR, uid, FIELDS[field], name)
     if not os.path.exists(path):
         return
     if not sort:

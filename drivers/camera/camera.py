@@ -23,7 +23,7 @@ from pygame import camera
 from base64 import b64encode
 from dev.driver import Driver
 from StringIO import StringIO
-from lib.mode import MODE_OVP, MODE_SYNC
+from lib.modes import MODE_OVP, MODE_SYNC
 
 CAMERA_INDEX = 0
 CAMERA_WIDTH = 640
@@ -39,7 +39,7 @@ class Camera(Driver):
     def setup(self):
         cameras = camera.list_cameras()
         if CAMERA_INDEX >= len(cameras):
-            raise Exception('no camera')
+            raise Exception('Error: no camera')
         self._cam = camera.Camera(cameras[CAMERA_INDEX], (CAMERA_WIDTH, CAMERA_HEIGHT))
         self._cam.start()
     

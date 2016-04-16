@@ -20,8 +20,8 @@
 import os
 import json
 from source import Source
+from fs.attr import set_attr
 from lib.util import DEFAULT_UID
-from fs.attribute import set_attr
 from lib.log import log_err, log_get
 from lib.common import combine, create, clone, link
 from lib.attributes import ATTR_FILTER, ATTR_HANDLER, ATTR_DISPATCHER
@@ -78,17 +78,17 @@ class Parser(object):
         if not members:
             identity = create(typ, uid=self._uid, parent=parent.get(name))
         else:
-            vertex = []
+            vrtx = []
             for j in members:
                 identity = self._creat(j, member, parent, timeout, devices, child=True)
                 if not identity:
                     log_err(self, 'invalid identity')
                     raise Exception(log_get(self, 'invalid identity'))
-                vertex.append(identity)
+                vrtx.append(identity)
             t = timeout.get(name)
             if not t or type(t) not in (int, float):
                 t = TIMEOUT
-            identity = combine(vertex, t, uid=self._uid)
+            identity = combine(vrtx, t, uid=self._uid)
             if not identity:
                 log_err(self, 'failed to combine')
                 raise Exception(log_get(self, 'failed to combine'))
@@ -105,7 +105,7 @@ class Parser(object):
         
         path = os.path.join(dirname, 'member')
         member = self._source.get_val(path)
-            
+        
         path = os.path.join(dirname, 'parent')
         parent = self._source.get_val(path)
         
@@ -124,7 +124,7 @@ class Parser(object):
         
         path = os.path.join(dirname, 'dispatcher.py')
         dispatchers = self._source.get_func(path)
-            
+        
         if build:
             if handlers:
                 for i in handlers:
