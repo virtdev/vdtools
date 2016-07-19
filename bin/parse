@@ -1,15 +1,7 @@
 #!/usr/bin/python
 
-import os
 import sys
-import commands
-
-_bin = commands.getoutput('readlink -f %s' % sys.argv[0])
-_path = os.path.dirname(_bin)
-_dirname = os.path.dirname(_path)
-sys.path.append(_dirname)
-
-from lib.parser import Parser
+from vdtools.parser import parse
 
 def usage():
     print('usage: parse [path]')
@@ -20,5 +12,5 @@ if __name__ == '__main__':
         usage()
         sys.exit()
     path = sys.argv[1]
-    parser = Parser()
-    print(str(parser.parse(path)))
+    parse(path)
+    print('successfully parse %s' % path)

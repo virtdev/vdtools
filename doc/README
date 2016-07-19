@@ -1,8 +1,0 @@
-1) Install:
-path/to/vdtools/install
-
-2) Run:
-python path/to/vdtools/vdtools
-
-3) Config:
-path/to/vdtools/conf/vdtools.py

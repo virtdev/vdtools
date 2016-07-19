@@ -1,15 +1,7 @@
 #!/usr/bin/python
 
-import os
 import sys
-import commands
-
-_bin = commands.getoutput('readlink -f %s' % sys.argv[0])
-_path = os.path.dirname(_bin)
-_dirname = os.path.dirname(_path)
-sys.path.append(_dirname)
-
-from lib.common import link
+from vdtools import link
 
 def usage():
     print('usage: link [src] [dest]')

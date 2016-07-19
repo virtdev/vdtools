@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from vdtools import clean
+from vdtools import mount
 
 if __name__ == '__main__':
-    clean()
+    mount()

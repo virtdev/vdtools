@@ -1,8 +1,0 @@
-LOG_ERR = True
-LOG_DEBUG = True
-LOG_WARNNING = False
-
-ENGINE_PORT = 11101
-BUILDER_PORT = 21211
-
-PATH_VDEV = '/mnt/vdev'
