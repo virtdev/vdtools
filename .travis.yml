@@ -21,6 +21,7 @@ before_install:
   - sudo apt-get install python-pygame
   - sudo apt-get install python-zbar
   - sudo pip install pip --upgrade
+  - sudo pip install zerorpc
   - sudo pip install gensim
   - sudo pip install hash_ring
   - sudo pip install html2text
@@ -39,10 +40,9 @@ before_install:
   - sudo pip install textblob
   - sudo pip install wget
   - sudo pip install xattr
-  - sudo pip install zerorpc
 
 install:
-  - python setup.py install
+  - sudo python setup.py install
 
 before_script:
   - sleep 5
