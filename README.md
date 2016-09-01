@@ -1,4 +1,4 @@
-# Vdtools [![MIT License](http://img.shields.io/:license-mit-blue.svg)](https://opensource.org/licenses/MIT)
+# Vdtools [![Build Status](https://travis-ci.org/virtdev/vdtools.svg?branch=unstable)](https://travis-ci.org/virtdev/vdtools)
 A set of tools of Virtdev
 
 # Quick Start
