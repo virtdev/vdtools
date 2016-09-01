@@ -1,0 +1,56 @@
+language: python
+
+python:
+  - 2.7
+
+before_install:
+  - sudo apt-get install build-essential
+  - sudo apt-get install libopencv-dev
+  - sudo apt-get install libsqlite3-dev
+  - sudo apt-get install libzbar-dev
+  - sudo apt-get install python-all-dev
+  - sudo apt-get install python-cffi
+  - sudo apt-get install python-dbus
+  - sudo apt-get install python-gevent
+  - sudo apt-get install python-gi-dev
+  - sudo apt-get install python-imaging
+  - sudo apt-get install python-numpy
+  - sudo apt-get install python-opencv
+  - sudo apt-get install python-pil
+  - sudo apt-get install python-pip
+  - sudo apt-get install python-pygame
+  - sudo apt-get install python-zbar
+  - sudo pip install pip --upgrade
+  - sudo pip install gensim
+  - sudo pip install hash_ring
+  - sudo pip install html2text
+  - sudo pip install isodate
+  - sudo pip install langid
+  - sudo pip install -U nltk
+  - sudo pip install psutil
+  - sudo pip install pycrypto
+  - sudo pip install pypng
+  - sudo pip install pyqrcode
+  - sudo pip install pysqlite
+  - sudo pip install python-rake
+  - sudo pip install pytz
+  - sudo pip install RestrictedPython
+  - sudo pip install stop-words
+  - sudo pip install textblob
+  - sudo pip install wget
+  - sudo pip install xattr
+  - sudo pip install zerorpc
+
+install:
+  - python setup.py install
+
+before_script:
+  - sleep 5
+  - sudo bin/simulator &
+  - sleep 5
+
+dist:
+  - xenial
+
+script:
+  - sudo scripts/test-drivers.sh
