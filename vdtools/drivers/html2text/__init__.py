@@ -1,3 +1,8 @@
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
+
 import html2text
 from base64 import b64encode, b64decode
 from vdtools.dev.driver import Driver, check_output

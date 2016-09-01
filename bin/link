@@ -1,15 +1,26 @@
 #!/usr/bin/python
 
 import sys
+import argparse
 from vdtools import link
 
-def usage():
-    print('usage: link [src] [dest]')
-
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        usage()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-u', dest='uid', default=None)
+    parser.add_argument('-s', dest='src', default=None)
+    parser.add_argument('-d', dest='dest', default=None)
+    
+    args = parser.parse_args(sys.argv[1:])
+    uid = args.uid
+    src = args.src
+    dest = args.dest
+    if not src or not dest:
+        parser.print_help()
         sys.exit()
-    src = sys.argv[1]
-    dest = sys.argv[2]
-    print(str(link(src, dest)))
+    
+    if uid:
+        ret = link(src, dest, uid=uid)
+    else:
+        ret = link(src, dest)
+    
+    print(str(ret))

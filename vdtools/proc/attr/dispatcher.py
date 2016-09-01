@@ -1,21 +1,9 @@
-#      dispatcher.py
-#      
-#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
-#      
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#      
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#      MA 02110-1301, USA.
+# dispatcher.py
+#
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
 
 from random import randint
 from threading import Lock
@@ -30,21 +18,21 @@ from vdtools.conf.log import LOG_DISPATCHER
 from vdtools.lib.attributes import ATTR_DISPATCHER
 from vdtools.lib.log import log_debug, log_err, log_get
 from vdtools.lib.util import lock, named_lock, edge_lock, is_local
-from vdtools.conf.virtdev import DEBUG, PROC_ADDR, DISPATCHER_PORT
+from vdtools.conf.defaults import DEBUG, PROC_ADDR, DISPATCHER_PORT
 
-CACHE = True
+ASYNC = True
 QUEUE_LEN = 4
 POOL_SIZE = cpu_count() * 4
 
 class DispatcherQueue(Queue):
-    def __init__(self, srv):
+    def __init__(self, scheduler):
         Queue.__init__(self, QUEUE_LEN)
-        self._srv = srv
+        self._scheduler = scheduler
     
     def proc(self, buf):
-        self._srv.proc(self.index, *buf)
+        self._scheduler.proc(self.index, *buf)
 
-class DispatcherServer(object):
+class DispatcherScheduler(object):
     def __init__(self, core):
         self._dest = {}
         self._busy = {}
@@ -131,19 +119,19 @@ class DispatcherServer(object):
 class Dispatcher(object):
     def __init__(self, uid, channel, core, addr=PROC_ADDR):
         self._uid = uid
-        self._srv = None
         self._queue = []
         self._paths = {}
         self._hidden = {}
         self._core = core
         self._addr = addr
         self._visible = {}
+        self._scheduler = None
         self._dispatchers = {}
         self._channel = channel
         self._lock = NamedLock()
         self._loader = Loader(self._uid)
-        if CACHE:
-            self._srv = DispatcherServer(core)
+        if ASYNC:
+            self._scheduler = DispatcherScheduler(core)
     
     def _log(self, text):
         if LOG_DISPATCHER:
@@ -159,14 +147,14 @@ class Dispatcher(object):
     def _send(self, dest, src, buf, flags):
         self._log('send, dest=%s, src=%s' % (dest, src))
         try:
-            if CACHE:
+            if ASYNC:
                 while True:
-                    ret = self._srv.select(dest, src, buf, flags)
+                    ret = self._scheduler.select(dest, src, buf, flags)
                     if ret == None:
-                        self._srv.wait()
+                        self._scheduler.wait()
                     else:
                         if not ret:
-                            self._srv.put(dest, src, buf, flags)
+                            self._scheduler.put(dest, src, buf, flags)
                         break
             else:
                 self._core.put(dest, src, buf, flags)                        
@@ -258,7 +246,7 @@ class Dispatcher(object):
             local = self._visible[src][dest]
         if not local:
             self._log('sendto, dest=%s, src=%s' % (dest, src))
-            self._channel.push(dest, dest=dest, src=src, buf=buf, flags=flags)
+            self._channel.send(dest, src, buf=buf, flags=flags)
         else:
             self._send(dest, src, buf, flags)
     
@@ -271,7 +259,7 @@ class Dispatcher(object):
         for i in dest:
             if not dest[i]:
                 self._log('send, dest=%s, src=%s' % (i, name))
-                self._channel.push(i, dest=i, src=name, buf=buf, flags=flags)
+                self._channel.send(i, name, buf=buf, flags=flags)
             else:
                 self._send(i, name, buf, flags)
     
@@ -293,7 +281,7 @@ class Dispatcher(object):
                 if blocks[cnt]:
                     if not dest[i]:
                         self._log('send blocks, dest=%s, src=%s' % (i, name))
-                        self._channel.push(i, dest=i, src=name, buf=blocks[cnt], flags=0)
+                        self._channel.send(i, name, buf=blocks[cnt], flags=0)
                     else:
                         self._send(i, name, blocks[cnt], 0)
                 cnt += 1

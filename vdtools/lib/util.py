@@ -1,21 +1,9 @@
-#      util.py
-#      
-#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
-#      
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#      
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#      MA 02110-1301, USA.
+# util.py
+#
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
 
 import os
 import sys
@@ -23,22 +11,45 @@ import ast
 import uuid
 import commands
 import collections
-from vdtools.fs.attr import Attr
-from vdtools.conf.env import PATH_VAR
 from SocketServer import ThreadingTCPServer
 from vdtools.lib.attributes import ATTRIBUTES
+from vdtools.conf.env import PATH_VAR, PATH_MNT
 from vdtools.lib.fields import FIELDS, FIELD_DATA, ATTR, EDGE
 
 UID_SIZE = 32
-DEFAULT_UID = ''
 DIR_MODE = 0o755
 FILE_MODE = 0o644
-
-DEVNULL = open(os.devnull, 'wb')
 INFO = ['mode', 'type', 'freq', 'range']
+
+_bin = commands.getoutput('readlink -f %s' % sys.argv[0])
+_path = os.path.dirname(_bin)
+_dir = os.path.dirname(_path)
+sys.path.append(_dir)
 
 def get_dir():
     return _dir
+
+def get_mnt_path(uid=None, name=None):
+    if PATH_MNT.startswith('/'):
+        path = PATH_MNT
+    else:
+        path = os.path.join(get_dir(), PATH_MNT)
+    
+    if uid:
+        path = os.path.join(path, uid)
+        if name:
+            path = os.path.join(path, name)
+    return path
+
+def get_var_path(uid=None):
+    if PATH_VAR.startswith('/'):
+        path = PATH_VAR
+    else:
+        path = os.path.join(get_dir(), PATH_VAR)
+        
+    if uid:
+        path = os.path.join(path, uid)
+    return path
 
 def get_name(ns, parent, child=None):
     if None == child:
@@ -47,13 +58,13 @@ def get_name(ns, parent, child=None):
 
 def get_devices(uid, name='', field='', sort=False):
     if not name and not field:
-        path = os.path.join(PATH_VAR, uid)
+        path = get_var_path(uid)
     else:
         if not field:
             field = FIELD_DATA
         elif not FIELDS.get(field):
             return
-        path = os.path.join(PATH_VAR, uid, FIELDS[field], name)
+        path = os.path.join(get_var_path(uid), FIELDS[field], name)
     if not os.path.exists(path):
         return
     if not sort:
@@ -73,7 +84,7 @@ def unicode2str(buf):
         return buf
 
 def is_local(uid, name):
-    path = os.path.join(PATH_VAR, uid, ATTR, name)
+    path = os.path.join(get_var_path(uid), ATTR, name)
     return os.path.exists(path)
 
 def zmqaddr(addr, port):
@@ -115,10 +126,7 @@ def edge_lock(func):
             self._lock.release(edge[0])
     return _edge_lock
 
-def mount_device(uid, name, mode, freq, prof):
-    pass
-
-def device_sync(manager, name, buf):
+def save_device(manager, name, buf):
     pass
 
 def device_info(buf):
@@ -137,11 +145,13 @@ def device_info(buf):
 def set_attr(uid, name, attr, val):
     if attr not in ATTRIBUTES:
         return
-    if uid == DEFAULT_UID:
+    if uid == UID:
+        from vdtools.fs.attr import Attr
         Attr().initialize(uid, name, attr, val)
 
 def edge_dir(uid, name):
-    return os.path.join(PATH_VAR, uid, EDGE, name)
+    path = get_var_path(uid)
+    return os.path.join(path, EDGE, name)
 
 def create_server(addr, port, handler):
     server = ThreadingTCPServer((addr, port), handler, bind_and_activate=False)

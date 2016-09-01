@@ -1,21 +1,9 @@
-#      core.py
-#      
-#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
-#      
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#      
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#      MA 02110-1301, USA.
+# core.py
+#
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
 
 import time
 from datetime import datetime
@@ -31,7 +19,7 @@ from vdtools.proc.attr.timeout import Timeout
 from vdtools.proc.attr.dispatcher import Dispatcher
 from vdtools.lib.fields import FIELD_EDGE, FIELD_VRTX
 from vdtools.lib.log import log_debug, log_err, log_get
-from vdtools.lib.util import named_lock, get_devices, device_sync
+from vdtools.lib.util import named_lock, get_devices, save_device
 from vdtools.lib.operations import OP_GET, OP_PUT, OP_OPEN, OP_CLOSE
 from vdtools.lib.modes import MODE_VIRT, MODE_SWITCH, MODE_IN, MODE_OUT, MODE_REFLECT, MODE_CLONE
 
@@ -374,6 +362,6 @@ class Core(object):
                 self._dispatcher.sendto(src, dest, res, hidden=True, flags=flags)
         return True
     
-    def sync(self, name, buf):
-        device_sync(self._manager, name, buf)
-        self._log('sync, name=%s' % name)
+    def save(self, name, buf):
+        save_device(self._manager, name, buf)
+        self._log('save, name=%s' % name)

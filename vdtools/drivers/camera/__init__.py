@@ -1,3 +1,8 @@
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
+
 import pygame
 from PIL import Image
 from pygame import camera

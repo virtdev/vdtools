@@ -3,14 +3,14 @@
 import sys
 from vdtools.parser import parse
 
-def usage():
-    print('usage: parse [path]')
-
 if __name__ == '__main__':
-    argc = len(sys.argv)
-    if argc != 2:
-        usage()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', dest='dir', default=None)
+    
+    args = parser.parse_args(sys.argv[1:])
+    dir = args.dir
+    if not dir:
+        parser.print_help()
         sys.exit()
-    path = sys.argv[1]
-    parse(path)
-    print('successfully parse %s' % path)
+    
+    parse(dir)

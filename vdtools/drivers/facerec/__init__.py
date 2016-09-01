@@ -1,3 +1,8 @@
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
+
 import cv2
 import numpy
 from PIL import Image

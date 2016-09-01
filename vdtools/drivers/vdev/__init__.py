@@ -1,3 +1,8 @@
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
+
 from dev.driver import Driver
 from vdtools.lib.modes import MODE_VIRT
 

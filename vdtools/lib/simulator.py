@@ -1,21 +1,9 @@
-#      simulator.py
-#      
-#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
-#      
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#      
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#      MA 02110-1301, USA.
+# simulator.py
+#
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
 
 import zerorpc
 from threading import Thread
@@ -31,10 +19,8 @@ from vdtools.lib.util import zmqaddr
 from vdtools.lib.loader import Loader
 from vdtools.dev.manager import Manager
 from vdtools.dev.driver import load_driver
-from vdtools.conf.vdtools import SIMULATOR_PORT
 from vdtools.dev.interface.lo import device_name
-
-VDEV = 'VDev'
+from vdtools.conf.defaults import SIMULATOR_PORT
 
 class SimulatorInterface(object):
     def __init__(self, manager):
@@ -43,7 +29,7 @@ class SimulatorInterface(object):
         self._attr = Attr()
         self._vrtx = Vrtx()
         self._manager = manager
-        self._manager.start()
+        manager.start()
     
     def enable(self, name):
         for d in self._manager.devices:
@@ -59,7 +45,7 @@ class SimulatorInterface(object):
     
     def create(self, uid, name, mode, vrtx, parent, freq, prof, hndl, filt, disp, typ, timeout):
         if not typ:
-            log_err(self, 'failed to create device, invalid device')
+            log_err(self, 'failed to create device, no type')
             raise Exception('Error: failed to create device')
         
         if mode & MODE_CLONE:
@@ -76,7 +62,7 @@ class SimulatorInterface(object):
             if typ:
                 driver = load_driver(typ)
                 if not driver:
-                    log_err(self, 'failed to create device')
+                    log_err(self, 'failed to create device, no driver')
                     raise Exception('Error: failed to create device')
                 if mode & MODE_CLONE:
                     mode = driver.get_mode() | MODE_CLONE
@@ -100,18 +86,18 @@ class SimulatorInterface(object):
         if prof:
             self._attr.initialize(uid, name, ATTR_PROFILE, prof)
         
-        if mode & MODE_CLONE:
-            self._attr.initialize(uid, name, ATTR_PARENT, parent)
-        
         if disp:
             self._attr.initialize(uid, name, ATTR_DISPATCHER, disp)
         
         if timeout:
             self._attr.initialize(uid, name, ATTR_TIMEOUT, timeout)
         
+        if mode & MODE_CLONE:
+            self._attr.initialize(uid, name, ATTR_PARENT, parent)
+        
         if vrtx:
             if mode & MODE_CLONE:
-                log_err(self, 'failed to create device, invalid vertex')
+                log_err(self, 'failed to create device, cannot set vertex for a cloned device')
                 raise Exception('Error: failed to create device')
             self._vrtx.initialize(uid, name, vrtx)
             for v in vrtx:

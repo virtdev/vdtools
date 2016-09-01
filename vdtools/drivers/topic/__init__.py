@@ -1,3 +1,8 @@
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
+
 from base64 import b64decode
 from gensim import corpora, models
 from stop_words import get_stop_words

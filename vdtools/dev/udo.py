@@ -1,33 +1,22 @@
-#      udo.py
-#      
-#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
-#      
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#      
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#      MA 02110-1301, USA.
+# udo.py
+#
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
 
 import os
 import ast
 import time
 from vdtools.lib import io
 from datetime import datetime
+from vdtools.lib.api import mount
 from vdtools.conf.log import LOG_UDO
 from vdtools.lib.loader import Loader
-from vdtools.conf.env import PATH_MNT
+from vdtools.conf.defaults import UPLOAD
 from threading import Thread, Event, Lock
 from vdtools.lib.log import log_debug, log_err
-from vdtools.lib.util import lock, mount_device
+from vdtools.lib.util import lock, get_mnt_path
 from vdtools.lib.attributes import ATTR_MODE, ATTR_FREQ
 from vdtools.dev.driver import FREQ_MAX, FREQ_MIN, need_freq
 from vdtools.lib.cmd import cmd_get, cmd_put, cmd_open, cmd_close
@@ -316,11 +305,11 @@ class UDO(object):
             if not (mode & MODE_TRIG) or device.check_atime():
                 res = None
                 name = device.d_name
-                if mode & MODE_SYNC:
+                if mode & MODE_SYNC and UPLOAD:
                     try:
-                        self._core.sync(name, buf)
+                        self._core.save(name, buf)
                     except:
-                        log_err(self, 'failed to handle, cannot synchronize, name=%s' % name)
+                        log_err(self, 'failed to handle, cannot save, name=%s' % name)
                         return
                 if self._core.has_handler(name):
                     try:
@@ -358,7 +347,7 @@ class UDO(object):
             self._listener = Thread(target=self._listen)
             self._listener.start()
     
-    def _init(self):
+    def _mount(self):
         if self._children:
             self._mode |= MODE_VIRT
         
@@ -370,7 +359,7 @@ class UDO(object):
             mode = self._mode
             freq = self._freq
             prof = self.d_profile
-            path = os.path.join(PATH_MNT, self._uid, self._name)
+            path = get_mnt_path(self._uid, self._name)
             if os.path.exists(path):
                 loader = Loader(self._uid)
                 curr_prof = loader.get_profile(self._name)
@@ -388,7 +377,7 @@ class UDO(object):
                         freq = loader.get_attr(self._name, ATTR_FREQ, float)
         
         if not self._children:
-            mount_device(self._uid, self.d_name, mode, freq, prof)
+            mount(self._uid, name=self.d_name, mode=mode, freq=freq, prof=prof)
             self._log('mount %s [%s*]' % (self.d_type, self.d_name[:8]))
     
     def mount(self, uid, name, core, sock=None, init=True):
@@ -397,7 +386,7 @@ class UDO(object):
         self._core = core
         self._socket = sock
         if init:
-            self._init()
+            self._mount()
         self._start()
     
     @lock

@@ -1,25 +1,13 @@
-#      parser.py
-#      
-#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
-#      
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#      
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#      MA 02110-1301, USA.
+# parser.py
+#
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
 
 import os
 from StringIO import StringIO
-from vdtools.lib.dgl import DGL
+from vdtools.lib.dil import DIL
 from vdtools.lib.source import get_func, get_val
 
 VAL_MEMBERS = ['member', 'parent', 'timeout']
@@ -31,7 +19,7 @@ def parse_files(files):
     if not f:
         raise Exception('Error: failed to parse, no graph')
     
-    vertex, edge = DGL().parse(f)
+    vertex, edge = DIL().parse(f)
     if not vertex or not edge:
         raise Exception('Error: failed to parse, invalid graph')
     
@@ -73,8 +61,7 @@ def parse(proj_dir):
     for name in MEMBERS:
         path = os.path.join(proj_dir, name)
         if os.path.exists(path):
-            f = open(path)
-            files.update({name:f})
+            files.update({name:open(path)})
     try:
         return parse_files(files)
     finally:

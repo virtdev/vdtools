@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from vdtools import mount
+from vdtools import initialize
 
 if __name__ == '__main__':
-    mount()
+    initialize()

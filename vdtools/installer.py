@@ -1,30 +1,18 @@
-#      installer.py
-#      
-#      Copyright (C) 2016 Yi-Wei Ci <ciyiwei@hotmail.com>
-#      
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#      
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#      
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#      MA 02110-1301, USA.
+# installer.py
+#
+# Copyright (C) 2016 Yi-Wei Ci
+#
+# Distributed under the terms of the MIT license.
+#
 
 import json
+from vdtools.lib.types import VDEV
 from vdtools.lib.util import set_attr
 from vdtools.parser import parse_string
 from vdtools import combine, create, clone, link
 from vdtools.lib.attributes import ATTR_FILTER, ATTR_HANDLER, ATTR_DISPATCHER
-from vdtools.lib.dgl import get_type, get_identity, get_image, is_identity, is_image
+from vdtools.lib.dil import get_type, get_identity, get_image, is_identity, is_image
 
-VDEV = 'VDev'
 TIMEOUT = 5 # seconds
 
 def _install(uid, name, member, parent, timeout, devices, child=False):
@@ -84,17 +72,21 @@ def install(uid, args):
     if not res:
         return
     
-    devices = {}
-    filt = res.get('filter')
     graph = res.get('graph')
     member = res.get('member')
     parent = res.get('parent')
-    handler = res.get('handler')
     timeout = res.get('timeout')
-    dispatcher = res.get('dispatcher')
+    
+    filt = res.get('filter.py')
+    handler = res.get('handler.py')
+    dispatcher = res.get('dispatcher.py')
     
     edge = graph['edge']
     vertex = graph['vertex']
+    
+    devices = {}
+    for i in vertex:
+        _install(uid, i, member, parent, timeout, devices)
     
     if handler:
         for i in handler:
@@ -117,8 +109,5 @@ def install(uid, args):
                 if not devices.has_key(i) or not devices.has_key(j):
                     raise Exception('Error: failed to install, invalid graph')
                 link(devices[i], devices[j], uid=uid)
-    
-    for i in vertex:
-        _install(uid, i, member, parent, timeout, devices)
             
     return json.dumps(devices)

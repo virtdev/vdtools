@@ -1,14 +1,29 @@
 #!/usr/bin/python
 
 import sys
+import argparse
 from vdtools import create
 
-def usage():
-    print('usage: create [type]')
-
 if __name__ == '__main__':
-    argc = len(sys.argv)
-    if argc != 2:
-        usage()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-u', dest='uid', default=None)
+    parser.add_argument('-p', dest='parent', default=None)
+    parser.add_argument('-t', dest='device_type', default=None)
+    
+    args = parser.parse_args(sys.argv[1:])
+    uid = args.uid
+    parent = args.parent
+    device_type = args.device_type
+    if not device_type:
+        parser.print_help()
         sys.exit()
-    print(str(create(sys.argv[1])))
+    
+    if uid:
+        if parent:
+            ret = create(device_type, uid=uid, parent=parent)
+        else:
+            ret = create(device_type, uid=uid)
+    else:
+        ret = create(device_type)
+    
+    print(str(ret))
