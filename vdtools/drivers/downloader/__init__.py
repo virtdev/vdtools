@@ -17,7 +17,7 @@ class Downloader(Driver):
     
     def _do_download(self, url):
         try:
-            filename = wget.download(url, out=PATH_DOWNLOADER, bar=None)
+            filename = wget.download(url, out=HOME, bar=None)
             if PRINT:
                 print('Downloader: filename=%s' % str(filename))
         except:

@@ -10,21 +10,21 @@ from vdtools.dev.driver import Driver, check_input
 
 PRINT = False
 INTERVAL = 1
-PATH_TIMER = '~/vdev/dev/timer'
-PATH_RECORDER = '~/vdev/dev/timerecorder'
+HOME_TIMER = '~/vdev/dev/timer'
+HOME_RECORDER = '~/vdev/dev/timerecorder'
 
 class TimeRecorder(Driver):
     def setup(self):
         if self.get_name():
-            path = os.path.join(PATH_RECORDER, self.get_name())
+            path = os.path.join(HOME_RECORDER, self.get_name())
             os.system('mkdir -p %s' % path)
         self._cnt = {}
     
     def _get_timer_path(self, timer, name):
-        return os.path.join(PATH_TIMER, timer, name)
+        return os.path.join(HOME_TIMER, timer, name)
     
     def _get_path(self, timer, name):
-        return os.path.join(PATH_RECORDER, self.get_name(), name)
+        return os.path.join(HOME_RECORDER, self.get_name(), name)
     
     def _save(self, timer, name):
         t_end = datetime.utcnow()
