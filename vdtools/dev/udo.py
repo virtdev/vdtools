@@ -10,7 +10,6 @@ import ast
 import time
 from vdtools.lib import io
 from datetime import datetime
-from vdtools.lib.api import mount
 from vdtools.conf.log import LOG_UDO
 from vdtools.lib.loader import Loader
 from vdtools.conf.defaults import UPLOAD
@@ -375,10 +374,6 @@ class UDO(object):
                         else:
                             mode |= MODE_SYNC
                         freq = loader.get_attr(self._name, ATTR_FREQ, float)
-        
-        if not self._children:
-            mount(self._uid, name=self.d_name, mode=mode, freq=freq, prof=prof)
-            self._log('mount %s [%s*]' % (self.d_type, self.d_name[:8]))
     
     def mount(self, uid, name, core, sock=None, init=True):
         self._uid = uid

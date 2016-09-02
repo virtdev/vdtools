@@ -7,7 +7,7 @@
 
 import os
 from vdtools.lib.fields import FIELDS
-from vdtools.lib.util import get_var_path
+from vdtools.lib.util import get_var_path, mkdir
 
 class Data(object):
     def _get_path(self, uid, name, field):
@@ -17,5 +17,4 @@ class Data(object):
     def initialize(self, uid, name):
         for i in FIELDS:
             path = self._get_path(uid, name, FIELDS[i])
-            if not os.path.exists(path):
-                os.makedirs(path, 0o755)
+            mkdir(path)

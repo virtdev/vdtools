@@ -10,15 +10,14 @@ from vdtools.dev.driver import Driver, check_input
 
 PRINT = False
 INTERVAL = 1
-PATH_TIMER = '/opt/timer'
-PATH_RECORDER = '/opt/timerecorder'
+PATH_TIMER = '~/vdev/dev/timer'
+PATH_RECORDER = '~/vdev/dev/timerecorder'
 
 class TimeRecorder(Driver):
     def setup(self):
         if self.get_name():
             path = os.path.join(PATH_RECORDER, self.get_name())
-            if not os.path.exists(path):
-                os.makedirs(path, 0o755)
+            os.system('mkdir -p %s' % path)
         self._cnt = {}
     
     def _get_timer_path(self, timer, name):

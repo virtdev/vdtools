@@ -26,15 +26,49 @@ _path = os.path.dirname(_bin)
 _dir = os.path.dirname(_path)
 sys.path.append(_dir)
 
+_mnt = PATH_MNT
+_var = PATH_VAR
+
 def get_dir():
     return _dir
 
-def get_mnt_path(uid=None, name=None):
-    if PATH_MNT.startswith('/'):
-        path = PATH_MNT
+def get_cmd(op, args):
+    return op + ':' + str(args)
+
+def _readlink(path):
+    if path.startswith('..'):
+        home = commands.getoutput('readlink -f ..')
+        path = path[2:]
+    elif path.startswith('.'):
+        home = commands.getoutput('readlink -f %s' % path[0])
+        path = path[1:]
+    elif path.startswith('~'):
+        user = getpass.getuser()
+        if user == 'root':
+            home = '/root'
+        else:
+            home = os.path.join('/home', user)
+        path = path[1:]
     else:
-        path = os.path.join(get_dir(), PATH_MNT)
+        if not path.startswith('/'):
+            return os.path.join(get_dir(), path)
+        else:
+            return path
     
+    if not path.startswith('/'):
+        raise Exception('Error: failed to read link')
+    
+    path = path[1:]
+    if path.startswith('.') or path.startswith('/'):
+        raise Exception('Error: failed to read link')
+    
+    return os.path.join(home, path)
+
+def get_mnt_path(uid=None, name=None):
+    global _mnt
+    path = _readlink(_mnt)
+    if _mnt != path:
+        _mnt = path
     if uid:
         path = os.path.join(path, uid)
         if name:
@@ -42,11 +76,10 @@ def get_mnt_path(uid=None, name=None):
     return path
 
 def get_var_path(uid=None):
-    if PATH_VAR.startswith('/'):
-        path = PATH_VAR
-    else:
-        path = os.path.join(get_dir(), PATH_VAR)
-        
+    global _var
+    path = _readlink(_var)
+    if _var != path:
+        _var = path
     if uid:
         path = os.path.join(path, uid)
     return path
@@ -159,3 +192,10 @@ def create_server(addr, port, handler):
     server.server_bind()
     server.server_activate()
     server.serve_forever()
+    
+def mkdir(path):
+    os.system('mkdir -p %s' % path)
+
+def rmdir(path):
+    os.system('rm -rf %s 2>/dev/null' % path)
+
