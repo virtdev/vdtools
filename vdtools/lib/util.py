@@ -9,6 +9,7 @@ import os
 import sys
 import ast
 import uuid
+import getpass
 import commands
 import collections
 from SocketServer import ThreadingTCPServer
@@ -35,7 +36,7 @@ def get_dir():
 def get_cmd(op, args):
     return op + ':' + str(args)
 
-def _readlink(path):
+def readlink(path):
     if path.startswith('..'):
         home = commands.getoutput('readlink -f ..')
         path = path[2:]
@@ -66,7 +67,7 @@ def _readlink(path):
 
 def get_mnt_path(uid=None, name=None):
     global _mnt
-    path = _readlink(_mnt)
+    path = readlink(_mnt)
     if _mnt != path:
         _mnt = path
     if uid:
@@ -77,7 +78,7 @@ def get_mnt_path(uid=None, name=None):
 
 def get_var_path(uid=None):
     global _var
-    path = _readlink(_var)
+    path = readlink(_var)
     if _var != path:
         _var = path
     if uid:
