@@ -29,7 +29,7 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
             raise Exception('Error: failed to install, invalid type')
         pid = devices.get(image)
         if not pid:
-            _install(image, member, parent, timeout, devices)
+            _install(uid, image, member, parent, timeout, devices)
             pid = devices.get(image)
             if not pid:
                 raise Exception('Error: failed to install')
@@ -54,7 +54,7 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
     else:
         vrtx = []
         for j in members:
-            identity = _install(j, member, parent, timeout, devices, child=True)
+            identity = _install(uid, j, member, parent, timeout, devices, child=True)
             if not identity:
                 raise Exception('Error: failed to install, invalid identity')
             vrtx.append(identity)
@@ -64,6 +64,7 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
         identity = combine(vrtx, t, uid=uid)
         if not identity:
             raise Exception('Error: failed to install, cannot combine')
+    
     devices.update({name:identity})
     return identity
     

@@ -5,6 +5,7 @@
 # Distributed under the terms of the MIT license.
 #
 
+import os
 import xattr
 from operations import *
 from util import get_cmd, readlink

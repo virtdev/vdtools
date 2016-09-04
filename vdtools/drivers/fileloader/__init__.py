@@ -5,6 +5,7 @@
 
 import os
 from base64 import b64encode
+from vdtools.lib.util import readlink
 from vdtools.dev.driver import Driver
 from vdtools.lib.modes import MODE_OVP, MODE_SWITCH
 
@@ -15,14 +16,14 @@ class FileLoader(Driver):
         Driver.__init__(self, name=name, mode=MODE_OVP | MODE_SWITCH, freq=1)
     
     def setup(self):
-        if self.get_name():
-            path = self._get_path()
-            os.system('mkdir -p %s' % path)
+        path = self._get_path()
+        os.system('mkdir -p %s' % path)
         self._files = None
         self._active = False
     
     def _get_path(self):
-        return os.path.join(HOME, self.get_name())
+        path = os.path.join(HOME, self.get_name())
+        return readlink(path)
     
     def _load(self):
         path = self._get_path()
