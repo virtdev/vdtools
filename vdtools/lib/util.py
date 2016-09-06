@@ -12,6 +12,7 @@ import uuid
 import getpass
 import commands
 import collections
+from vdtools.conf.user import UID
 from SocketServer import ThreadingTCPServer
 from vdtools.lib.attributes import ATTRIBUTES
 from vdtools.conf.env import PATH_VAR, PATH_MNT
