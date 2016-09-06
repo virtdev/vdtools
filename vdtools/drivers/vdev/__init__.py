@@ -3,7 +3,7 @@
 # Distributed under the terms of the MIT license.
 #
 
-from dev.driver import Driver
+from vdtools.dev.driver import Driver
 from vdtools.lib.modes import MODE_VIRT
 
 class VDev(Driver):
