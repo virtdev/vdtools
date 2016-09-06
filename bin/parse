@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+import argparse
 from vdtools.parser import parse
 
 if __name__ == '__main__':
