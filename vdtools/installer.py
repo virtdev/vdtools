@@ -17,9 +17,6 @@ from vdtools.lib.dil import get_type, get_identity, get_image, is_identity, is_i
 TIMEOUT = 5 # seconds
 
 def _install(uid, name, member, parent, timeout, devices, child=False):
-    if not uid:
-        uid = UID
-    
     if name in devices:
         return devices[name]
         
@@ -73,6 +70,9 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
     return identity
     
 def install(uid, args):
+    if not uid:
+        uid = UID
+    
     res = parse_string(args)
     if not res:
         return
