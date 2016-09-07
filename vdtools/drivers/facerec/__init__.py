@@ -1,3 +1,5 @@
+# facerec.py
+#
 # Copyright (C) 2016 Yi-Wei Ci
 #
 # Distributed under the terms of the MIT license.
@@ -8,15 +10,15 @@ import numpy
 from PIL import Image
 from base64 import b64decode
 from StringIO import StringIO
-from vdtools.dev.driver import Driver, check_output
+from vdtools.dev.driver import Driver, wrapper
 
 PRINT = False
 RESIZE = False
-PATH_CASCADE = '/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml'
+CASCADE = '/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml'
 
 class FaceRec(Driver):
     def setup(self):
-        self._cascade = cv2.CascadeClassifier(PATH_CASCADE)
+        self._cascade = cv2.CascadeClassifier(CASCADE)
     
     def _recognize(self, image):
         try:
@@ -38,9 +40,9 @@ class FaceRec(Driver):
             if PRINT:
                 print('FaceRec: failed to recognize')
     
-    @check_output
-    def put(self, args):
-        image = args.get('content')
+    @wrapper
+    def put(self, *args, **kwargs):
+        image = kwargs.get('content')
         if self._recognize(image):
             return {'enable':'true'}
         else:

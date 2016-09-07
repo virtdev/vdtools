@@ -19,7 +19,7 @@ TIMEOUT = 5 # seconds
 def _install(uid, name, member, parent, timeout, devices, child=False):
     if name in devices:
         return devices[name]
-        
+    
     if is_identity(name):
         identity = get_identity(name)
         devices.update({name:identity})
@@ -37,19 +37,19 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
         identity = clone(pid, uid=uid)
         devices.update({name:identity})
         return identity
-        
+    
     members = None
     typ = get_type(name)
     if not typ:
         raise Exception('Error: failed to install, invalid graph')
-        
+    
     if typ == VDEV:
         if child:
             raise Exception('Error: failed to install, invalid graph')
         members = member.get(name)
         if members and type(members) != list:
             raise Exception('Error: failed to install, invalid graph')
-        
+    
     if not members:
         identity = create(typ, uid=uid, parent=parent.get(name))
     else:
@@ -68,7 +68,7 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
     
     devices.update({name:identity})
     return identity
-    
+
 def install(uid, args):
     if not uid:
         uid = UID
@@ -97,22 +97,22 @@ def install(uid, args):
         for i in handler:
             if i in devices and not is_image(i) and not is_identity(i):
                 set_attr(uid, devices[i], ATTR_HANDLER, handler[i])
-            
+    
     if filt:
         for i in filt:
             if i in devices and not is_image(i) and not is_identity(i):
                 set_attr(uid, devices[i], ATTR_FILTER, filt[i])
-            
+    
     if dispatcher:
         for i in dispatcher:
             if i in devices and not is_image(i) and not is_identity(i):
                 set_attr(uid, devices[i], ATTR_DISPATCHER, dispatcher[i])
-            
+    
     for i in edge:
         for j in edge[i]:
             if j != i:
                 if not devices.has_key(i) or not devices.has_key(j):
                     raise Exception('Error: failed to install, invalid graph')
                 link(devices[i], devices[j], uid=uid)
-            
+    
     return json.dumps(devices)

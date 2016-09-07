@@ -7,21 +7,21 @@
 
 from random import randint
 from threading import Lock
-from multiprocessing import cpu_count
-
 from vdtools.proc import proc
 from vdtools.lib.pool import Pool
 from vdtools.lib.queue import Queue
+from multiprocessing import cpu_count
 from vdtools.lib.loader import Loader
 from vdtools.lib.lock import NamedLock
+from vdtools.conf.defaults import DEBUG
 from vdtools.conf.log import LOG_DISPATCHER
 from vdtools.lib.attributes import ATTR_DISPATCHER
 from vdtools.lib.log import log_debug, log_err, log_get
+from vdtools.conf.defaults import PROC_ADDR, DISPATCHER_PORT
 from vdtools.lib.util import lock, named_lock, edge_lock, is_local
-from vdtools.conf.defaults import DEBUG, PROC_ADDR, DISPATCHER_PORT
 
-ASYNC = True
-QUEUE_LEN = 4
+ASYNC = False
+QUEUE_LEN = 2
 POOL_SIZE = cpu_count() * 4
 
 class DispatcherQueue(Queue):
@@ -44,6 +44,9 @@ class DispatcherScheduler(object):
     
     @lock
     def select(self, dest, src, buf, flags):
+        if self._busy.has_key(src):
+            return False
+        
         pos = None
         length = None
         for i in range(POOL_SIZE):
@@ -56,12 +59,11 @@ class DispatcherScheduler(object):
                         pos = i
             else:
                 return False
-        if self._busy.has_key(src):
-            return False
-        elif pos != None:
+        
+        if pos != None:
             queue = self._pool.get(pos)
             if not queue.push((dest, src, buf, flags)):
-                log_err(self, 'failed to select, cannot push')
+                log_err(self, 'failed to select')
                 raise Exception(log_get(self, 'failed to select'))
             return True
     
@@ -112,7 +114,7 @@ class DispatcherScheduler(object):
             self._core.put(dest, src, buf, flags)
         finally:
             self._release(dest)
-            
+    
     def wait(self):
         self._pool.wait()
 
@@ -145,7 +147,6 @@ class Dispatcher(object):
         return buf
     
     def _send(self, dest, src, buf, flags):
-        self._log('send, dest=%s, src=%s' % (dest, src))
         try:
             if ASYNC:
                 while True:
@@ -157,7 +158,8 @@ class Dispatcher(object):
                             self._scheduler.put(dest, src, buf, flags)
                         break
             else:
-                self._core.put(dest, src, buf, flags)                        
+                self._core.put(dest, src, buf, flags)
+            self._log('send, dest=%s, src=%s' % (dest, src))                      
         except:
             log_err(self, 'failed to send, dest=%s, src=%s' % (dest, src))
     
@@ -184,7 +186,7 @@ class Dispatcher(object):
         paths[src].update({dest:local})
         if not self._paths[src].has_key(dest):
             if not local:
-                self._channel.connect(dest)
+                self._channel.allocate(dest)
             self._paths[src].update({dest:1})
         else:
             self._paths[src][dest] += 1
@@ -206,7 +208,7 @@ class Dispatcher(object):
         if 0 == self._paths[src][dest]:
             del self._paths[src][dest]
             if not local:
-                self._channel.disconnect(dest)
+                self._channel.free(dest)
         self._log('remove edge, edge=%s, local=%s' % (str(edge), str(local)))
     
     @named_lock
@@ -245,10 +247,10 @@ class Dispatcher(object):
         else:
             local = self._visible[src][dest]
         if not local:
-            self._log('sendto, dest=%s, src=%s' % (dest, src))
-            self._channel.send(dest, src, buf=buf, flags=flags)
+            self._channel.put(dest, src, buf=buf, flags=flags)
         else:
             self._send(dest, src, buf, flags)
+        self._log('sendto, dest=%s, src=%s' % (dest, src))
     
     def send(self, name, buf, flags=0):
         if not buf:
@@ -258,10 +260,10 @@ class Dispatcher(object):
             return
         for i in dest:
             if not dest[i]:
-                self._log('send, dest=%s, src=%s' % (i, name))
-                self._channel.send(i, name, buf=buf, flags=flags)
+                self._channel.put(i, name, buf=buf, flags=flags)
             else:
                 self._send(i, name, buf, flags)
+        self._log('send, dest=%s, src=%s' % (str(dest), name))
     
     def send_blocks(self, name, blocks):
         if not blocks:
@@ -280,8 +282,8 @@ class Dispatcher(object):
             for _ in range(window):
                 if blocks[cnt]:
                     if not dest[i]:
+                        self._channel.put(i, name, buf=blocks[cnt], flags=0)
                         self._log('send blocks, dest=%s, src=%s' % (i, name))
-                        self._channel.send(i, name, buf=blocks[cnt], flags=0)
                     else:
                         self._send(i, name, blocks[cnt], 0)
                 cnt += 1
@@ -298,7 +300,7 @@ class Dispatcher(object):
                 code = self._get_code(name)
                 if not code:
                     return
-            return proc.put(self._addr, DISPATCHER_PORT, code=code, args=buf)
+            return proc.put(self._addr, DISPATCHER_PORT, code, buf)
         except:
             log_err(self, 'failed to put')
     

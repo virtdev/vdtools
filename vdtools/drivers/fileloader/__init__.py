@@ -1,3 +1,5 @@
+# fileloader.py
+#
 # Copyright (C) 2016 Yi-Wei Ci
 #
 # Distributed under the terms of the MIT license.
@@ -5,8 +7,8 @@
 
 import os
 from base64 import b64encode
-from vdtools.lib.util import readlink
 from vdtools.dev.driver import Driver
+from vdtools.lib.util import readlink
 from vdtools.lib.modes import MODE_OVP, MODE_SWITCH
 
 HOME = '~/vdev/dev/fileloader'

@@ -1,3 +1,5 @@
+# topic.py
+#
 # Copyright (C) 2016 Yi-Wei Ci
 #
 # Distributed under the terms of the MIT license.
@@ -8,7 +10,7 @@ from gensim import corpora, models
 from stop_words import get_stop_words
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem.porter import PorterStemmer
-from vdtools.dev.driver import Driver, check_output
+from vdtools.dev.driver import Driver, wrapper
 
 PRINT = False
 NR_WORDS = 4
@@ -34,9 +36,9 @@ class Topic(Driver):
                 print('Topic: topics=%s' % topics)
             return topics
     
-    @check_output
-    def put(self, args):
-        text = args.get('content')
+    @wrapper
+    def put(self, *args, **kwargs):
+        text = kwargs.get('content')
         if text:
             topics = self._get_topics(text)
             if topics:
