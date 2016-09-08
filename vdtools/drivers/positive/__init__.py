@@ -10,7 +10,7 @@ from vdtools.dev.driver import Driver, wrapper
 
 PRINT = False
 
-class Positve(Driver):
+class Positive(Driver):
     @wrapper
     def put(self, *args, **kwargs):
         output = copy(kwargs)
