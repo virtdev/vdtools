@@ -62,7 +62,7 @@ class SimulatorInterface(object):
             if typ:
                 driver = load_driver(typ)
                 if not driver:
-                    log_err(self, 'failed to create device, no driver')
+                    log_err(self, 'failed to create device, no %s driver' % str(typ))
                     raise Exception('Error: failed to create device')
                 if mode & MODE_CLONE:
                     mode = driver.get_mode() | MODE_CLONE

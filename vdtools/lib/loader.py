@@ -21,7 +21,6 @@ class Loader(object):
     
     def _read(self, name, attr):
         path = self._get_path(name, attr)
-        print 'loader: read, path=%s' % path
         try:
             os.stat(path)
         except:

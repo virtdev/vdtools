@@ -12,7 +12,7 @@ from vdtools.lib.util import set_attr
 from vdtools.parser import parse_string
 from vdtools import combine, create, clone, link
 from vdtools.lib.attributes import ATTR_FILTER, ATTR_HANDLER, ATTR_DISPATCHER
-from vdtools.lib.dil import get_type, get_identity, get_image, is_identity, is_image
+from vdtools.lib.ddl import get_type, get_identity, get_image, is_identity, is_image
 
 TIMEOUT = 5 # seconds
 
@@ -38,20 +38,16 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
         devices.update({name:identity})
         return identity
     
-    members = None
     typ = get_type(name)
     if not typ:
         raise Exception('Error: failed to install, invalid graph')
     
-    if typ == VDEV:
-        if child:
-            raise Exception('Error: failed to install, invalid graph')
-        members = member.get(name)
-        if members and type(members) != list:
-            raise Exception('Error: failed to install, invalid graph')
+    members = member.get(name)
+    if members and type(members) != list:
+        raise Exception('Error: failed to install, invalid graph')
     
     if not members:
-        identity = create(typ, uid=uid, parent=parent.get(name))
+        identity = create(typ, parent=parent.get(name), uid=uid)
     else:
         vrtx = []
         for j in members:
@@ -60,9 +56,9 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
                 raise Exception('Error: failed to install, invalid identity')
             vrtx.append(identity)
         t = timeout.get(name)
-        if not t or type(t) not in (int, float):
+        if t and type(t) in (int, float):
             t = TIMEOUT
-        identity = combine(vrtx, t, uid=uid)
+        identity = combine(typ, vrtx, t, uid=uid)
         if not identity:
             raise Exception('Error: failed to install, cannot combine')
     

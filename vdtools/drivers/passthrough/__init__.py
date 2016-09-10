@@ -6,8 +6,11 @@
 
 from vdtools.dev.driver import Driver, wrapper
 
-class Probe(Driver):
+PRINT = False
+
+class Passthrough(Driver):
     @wrapper
     def put(self, *args, **kwargs):
-        print('Probe: input=%s' % str(kwargs))
+        if PRINT:
+            print('Passthrough: input=%s' % str(kwargs))
         return kwargs

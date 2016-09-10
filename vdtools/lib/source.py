@@ -23,14 +23,16 @@ def get_func(source_file):
         match = False
         total = len(func_names)
         for j in range(total):
-            if func_list[i].startswith('def %s' % func_names[j]):
-                res.update({func_names[j]:func_list[i]})
+            head = 'def %s' % func_names[j]
+            if func_list[i].startswith(head):
+                body = 'def func' + func_list[i][len(head):]
+                res.update({func_names[j]:body})
                 del func_names[j]
                 match = True
                 break
         
         if not match:
-            raise Exception('Error: failed to get source')
+            raise Exception('Error: failed to get function')
     
     return res
 

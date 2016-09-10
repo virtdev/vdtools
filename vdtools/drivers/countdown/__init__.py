@@ -1,4 +1,3 @@
-# countdown.py
 #
 # Copyright (C) 2016 Yi-Wei Ci
 #
@@ -18,5 +17,5 @@ class Countdown(Driver):
             if cnt >= 0:
                 output['__cnt__'] = cnt
                 if PRINT:
-                    print('Countdown: output=%d' % output)
+                    print('Countdown: output=%s' % str(output))
                 return output

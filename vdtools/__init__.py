@@ -19,9 +19,9 @@ def check_uuid(identity):
     try:
         return uuid.UUID(identity).hex
     except:
-        return
+        pass
 
-def create(device_type, uid=UID, parent=None):
+def create(device_type, parent=None, uid=UID):
     if uid == UID:
         mode = MODE_VIRT
         name = uuid.uuid4().hex
@@ -50,17 +50,17 @@ def clone(parent, uid=UID):
         name = api_clone(path, parent=parent)
     return name
 
-def combine(vertex, timeout, uid=UID):
+def combine(device_type, vertex, timeout, uid=UID):
     if uid == UID:
         mode = MODE_VIRT
         name = uuid.uuid4().hex
         cli = zerorpc.Client()
         cli.connect(zmqaddr('127.0.0.1', SIMULATOR_PORT))
-        cli.create(uid, name, mode, vertex, None, None, None, None, None, None, None, timeout)
+        cli.create(uid, name, mode, vertex, None, None, None, None, None, None, device_type, timeout)
         cli.close()
     else:
         path = os.path.join(PATH_VDEV, uid)
-        name = api_combine(path, vertex=vertex, timeout=timeout)
+        name = api_combine(path, type=device_type, vertex=vertex, timeout=timeout)
     return name
 
 def enable(name, uid=UID):

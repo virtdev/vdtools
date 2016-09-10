@@ -7,7 +7,7 @@
 
 import os
 from StringIO import StringIO
-from vdtools.lib.dil import DIL
+from vdtools.lib.ddl import DDL
 from vdtools.lib.source import get_func, get_val
 
 VAL_MEMBERS = ['member', 'parent', 'timeout']
@@ -19,7 +19,7 @@ def parse_files(files):
     if not f:
         raise Exception('Error: failed to parse, no graph')
     
-    vertex, edge = DIL().parse(f)
+    vertex, edge = DDL().parse(f)
     if not vertex or not edge:
         raise Exception('Error: failed to parse, invalid graph')
     
