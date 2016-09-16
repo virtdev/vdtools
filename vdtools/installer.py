@@ -16,7 +16,7 @@ from vdtools.lib.ddl import get_type, get_identity, get_image, is_identity, is_i
 
 TIMEOUT = 5 # seconds
 
-def _install(uid, name, member, parent, timeout, devices, path=None):
+def _install(uid, name, member, parent, timeout, devices, path):
     if name in devices:
         return devices[name]
     
@@ -30,7 +30,7 @@ def _install(uid, name, member, parent, timeout, devices, path=None):
             raise Exception('Error: failed to install, invalid type')
         pid = devices.get(image)
         if not pid:
-            _install(uid, image, member, parent, timeout, devices, path=path)
+            _install(uid, image, member, parent, timeout, devices, path)
             pid = devices.get(image)
             if not pid:
                 raise Exception('Error: failed to install')
@@ -47,14 +47,11 @@ def _install(uid, name, member, parent, timeout, devices, path=None):
         raise Exception('Error: failed to install, invalid graph')
     
     if not members:
-        if path:
-            identity = create(typ, parent=parent.get(name), uid=uid, path=path)
-        else:
-            identity = create(typ, parent=parent.get(name), uid=uid)
+        identity = create(typ, parent=parent.get(name), uid=uid, path=path)
     else:
         vrtx = []
         for j in members:
-            identity = _install(uid, j, member, parent, timeout, devices, path=path)
+            identity = _install(uid, j, member, parent, timeout, devices, path)
             if not identity:
                 raise Exception('Error: failed to install, invalid identity')
             vrtx.append(identity)
@@ -68,7 +65,7 @@ def _install(uid, name, member, parent, timeout, devices, path=None):
     devices.update({name:identity})
     return identity
 
-def install(uid, args, path=None):
+def install(uid, args, path=PATH_MNT):
     if not uid:
         uid = UID
     
@@ -90,7 +87,7 @@ def install(uid, args, path=None):
     
     devices = {}
     for i in vertex:
-        _install(uid, i, member, parent, timeout, devices, path=path)
+        _install(uid, i, member, parent, timeout, devices, path)
     
     if handler:
         for i in handler:
@@ -112,6 +109,6 @@ def install(uid, args, path=None):
             if j != i:
                 if not devices.has_key(i) or not devices.has_key(j):
                     raise Exception('Error: failed to install, invalid graph')
-                link(devices[i], devices[j], uid=uid)
+                link(devices[i], devices[j], uid=uid, path=path)
     
     return json.dumps(devices)
