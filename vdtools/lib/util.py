@@ -13,9 +13,9 @@ import getpass
 import commands
 import collections
 from vdtools.conf.user import UID
+from vdtools.conf.env import PATH_VAR
 from SocketServer import ThreadingTCPServer
 from vdtools.lib.attributes import ATTRIBUTES
-from vdtools.conf.env import PATH_VAR, PATH_MNT
 from vdtools.lib.fields import FIELDS, FIELD_DATA, ATTR, EDGE
 
 UID_SIZE = 32
@@ -27,8 +27,6 @@ _bin = commands.getoutput('readlink -f %s' % sys.argv[0])
 _path = os.path.dirname(_bin)
 _dir = os.path.dirname(_path)
 sys.path.append(_dir)
-
-_mnt = PATH_MNT
 _var = PATH_VAR
 
 def get_dir():
@@ -66,25 +64,19 @@ def readlink(path):
     
     return os.path.join(home, path)
 
-def get_mnt_path(uid=None, name=None):
-    global _mnt
-    path = readlink(_mnt)
-    if _mnt != path:
-        _mnt = path
-    if uid:
-        path = os.path.join(path, uid)
-        if name:
-            path = os.path.join(path, name)
-    return path
-
-def get_var_path(uid=None):
+def get_var_path(uid=None, name=None):
     global _var
     path = readlink(_var)
     if _var != path:
         _var = path
     if uid:
         path = os.path.join(path, uid)
+        if name:
+            path = os.path.join(path, name)
     return path
+
+def get_mnt_path(uid=None, name=None):
+    return get_var_path(uid, name)
 
 def get_name(ns, parent, child=None):
     if None == child:
@@ -201,3 +193,8 @@ def mkdir(path):
 def rmdir(path):
     os.system('rm -rf %s 2>/dev/null' % path)
 
+def check_uuid(identity):
+    try:
+        return uuid.UUID(identity).hex
+    except:
+        pass

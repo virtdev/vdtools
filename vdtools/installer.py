@@ -16,7 +16,7 @@ from vdtools.lib.ddl import get_type, get_identity, get_image, is_identity, is_i
 
 TIMEOUT = 5 # seconds
 
-def _install(uid, name, member, parent, timeout, devices, child=False):
+def _install(uid, name, member, parent, timeout, devices, path=None):
     if name in devices:
         return devices[name]
     
@@ -30,7 +30,7 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
             raise Exception('Error: failed to install, invalid type')
         pid = devices.get(image)
         if not pid:
-            _install(uid, image, member, parent, timeout, devices)
+            _install(uid, image, member, parent, timeout, devices, path=path)
             pid = devices.get(image)
             if not pid:
                 raise Exception('Error: failed to install')
@@ -47,11 +47,14 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
         raise Exception('Error: failed to install, invalid graph')
     
     if not members:
-        identity = create(typ, parent=parent.get(name), uid=uid)
+        if path:
+            identity = create(typ, parent=parent.get(name), uid=uid, path=path)
+        else:
+            identity = create(typ, parent=parent.get(name), uid=uid)
     else:
         vrtx = []
         for j in members:
-            identity = _install(uid, j, member, parent, timeout, devices, child=True)
+            identity = _install(uid, j, member, parent, timeout, devices, path=path)
             if not identity:
                 raise Exception('Error: failed to install, invalid identity')
             vrtx.append(identity)
@@ -65,7 +68,7 @@ def _install(uid, name, member, parent, timeout, devices, child=False):
     devices.update({name:identity})
     return identity
 
-def install(uid, args):
+def install(uid, args, path=None):
     if not uid:
         uid = UID
     
@@ -87,7 +90,7 @@ def install(uid, args):
     
     devices = {}
     for i in vertex:
-        _install(uid, i, member, parent, timeout, devices)
+        _install(uid, i, member, parent, timeout, devices, path=path)
     
     if handler:
         for i in handler:
