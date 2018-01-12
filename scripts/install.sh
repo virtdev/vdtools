@@ -1,6 +1,6 @@
 #!/bin/sh
 apt-get install -y build-essential
-apt-get install -y libopencv-dev
+apt-get install -y libopencv-dev --allow-unauthenticated
 apt-get install -y libsqlite3-dev
 apt-get install -y libzbar-dev
 apt-get install -y python-all-dev
