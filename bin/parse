@@ -7,11 +7,11 @@ from vdtools.parser import parse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', dest='dir', default=None)
-    
+
     args = parser.parse_args(sys.argv[1:])
     dir = args.dir
     if not dir:
         parser.print_help()
         sys.exit()
-    
+
     parse(dir)

@@ -8,17 +8,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-u', dest='uid', default=None)
     parser.add_argument('-p', dest='parent', default=None)
-    
+
     args = parser.parse_args(sys.argv[1:])
     uid = args.uid
     parent = args.parent
     if not parent:
         parser.print_help()
         sys.exit()
-    
+
     if uid:
         ret = clone(parent, uid=uid)
     else:
         ret = clone(parent)
-    
+
     print(str(ret))

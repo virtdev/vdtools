@@ -9,7 +9,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', dest='uid', default=None)
     parser.add_argument('-t', dest='timeout', default=None)
     parser.add_argument('-d', nargs='+', dest='device', default=None)
-    
+
     args = parser.parse_args(sys.argv[1:])
     uid = args.uid
     device = args.device
@@ -17,10 +17,10 @@ if __name__ == '__main__':
     if not device:
         parser.print_help()
         sys.exit()
-    
+
     if uid:
         ret = combine(device, timeout, uid=uid)
     else:
         ret = combine(device, timeout)
-    
+
     print(str(ret))

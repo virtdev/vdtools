@@ -28,7 +28,7 @@ def recv_bytes(sock, length):
         if not buf:
             raise Exception('Error: failed to receive bytes')
         ret.append(buf)
-        length -= len(buf) 
+        length -= len(buf)
     return ''.join(ret)
 
 def recv_pkt(sock):

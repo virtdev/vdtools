@@ -14,12 +14,12 @@ def get_func(source_file):
     func_names = [item.name for item in module.body if isinstance(item, ast.FunctionDef)]
     if not func_names:
         return res
-    
+
     func_list = buf.split('\ndef')
     for i in range(len(func_list)):
         if not func_list[i].startswith('def'):
             func_list[i] = 'def' + func_list[i]
-        
+
         match = False
         total = len(func_names)
         for j in range(total):
@@ -30,10 +30,10 @@ def get_func(source_file):
                 del func_names[j]
                 match = True
                 break
-        
+
         if not match:
             raise Exception('Error: failed to get function')
-    
+
     return res
 
 def get_val(source_file):

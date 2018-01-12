@@ -8,7 +8,7 @@
 import struct
 
 CMD_GET   = 0x0001
-CMD_PUT   = 0x0002 
+CMD_PUT   = 0x0002
 CMD_OPEN  = 0x0004
 CMD_CLOSE = 0x0008
 CMD_MOUNT = 0x0010

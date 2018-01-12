@@ -16,14 +16,14 @@ class Filter(object):
         self._addr = addr
         self._filters = {}
         self._loader = Loader(uid)
-    
+
     def _get_code(self, name):
         buf = self._filters.get(name)
         if not buf:
             buf = self._loader.get_attr(name, ATTR_FILTER, str)
             self._filters.update({name:buf})
         return buf
-    
+
     def check(self, name):
         if self._filters.get(name):
             return True
@@ -32,11 +32,11 @@ class Filter(object):
             if buf:
                 self._filters.update({name:buf})
                 return True
-    
+
     def remove(self, name):
         if self._filters.has_key(name):
             del self._filters[name]
-    
+
     def put(self, name, buf):
         try:
             code = self._get_code(name)

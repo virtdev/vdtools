@@ -13,7 +13,7 @@ class Data(object):
     def _get_path(self, uid, name, field):
         path = get_var_path(uid)
         return str(os.path.join(path, field, name))
-    
+
     def initialize(self, uid, name):
         for i in FIELDS:
             path = self._get_path(uid, name, FIELDS[i])

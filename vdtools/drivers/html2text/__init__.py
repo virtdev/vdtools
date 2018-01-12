@@ -12,7 +12,7 @@ PRINT = False
 IGNORE_LINKS = True
 IGNORE_IMAGES = True
 
-class HTML2Text(Driver):    
+class HTML2Text(Driver):
     def _convert(self, html):
         buf = b64decode(html)
         if buf:
@@ -29,7 +29,7 @@ class HTML2Text(Driver):
             except:
                 if PRINT:
                     print('HTML2Text: failed to convert')
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         html = kwargs.get('content')

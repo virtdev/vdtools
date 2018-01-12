@@ -1,9 +1,9 @@
 import os
 import sys
-import commands
+import subprocess
 from setuptools import setup, find_packages
 
-_path = commands.getoutput('readlink -f %s' % sys.argv[0])
+_path = subprocess.check_output(['readlink', '-f', sys.argv[0]])
 _dir = os.path.dirname(_path)
 os.system(os.path.join(_dir, 'scripts', 'install.sh'))
 

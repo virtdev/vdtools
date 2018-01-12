@@ -17,10 +17,10 @@ class Downloader(Driver):
     def setup(self):
         path = self._get_path()
         os.system('mkdir -p %s' % path)
-    
+
     def _get_path(self):
         return readlink(HOME)
-    
+
     def _do_download(self, url):
         try:
             filename = wget.download(url, out=self._get_path(), bar=None)
@@ -29,11 +29,11 @@ class Downloader(Driver):
         except:
             if PRINT:
                 print('Downloader: failed to download')
-    
+
     def _download(self, url):
         Thread(target=self._do_download, args=(url,)).start()
         return True
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         url = kwargs.get('url')

@@ -80,7 +80,7 @@ class DDL(object):
         except:
             log_err(self, 'failed to get group')
             pass
-    
+
     def _get_vertex(self, buf):
         try:
             v = ()
@@ -116,7 +116,7 @@ class DDL(object):
         except:
             log_err(self, 'failed to get vertex')
             pass
-    
+
     def _load_graph(self, graph_file):
         graph = ()
         while True:
@@ -129,7 +129,7 @@ class DDL(object):
                 return
             graph += (ret,)
         return graph
-    
+
     def _check_vertex(self, graph):
         v = []
         for item in graph:
@@ -137,12 +137,12 @@ class DDL(object):
                 if item not in v:
                     v.append(item)
             else:
-                ret = self._check_vertex(item) 
+                ret = self._check_vertex(item)
                 for i in ret:
                     if i not in v:
                         v.append(i)
         return v
-    
+
     def _extract_edges(self, graph):
         end = []
         start = []
@@ -210,7 +210,7 @@ class DDL(object):
                                 else:
                                     if j not in edges[k]:
                                         edges[k].append(j)
-                    
+
                     for j in tmp_edges:
                         if type(j) != str:
                             log_err(self, 'invalid graph')
@@ -221,7 +221,7 @@ class DDL(object):
                             for k in tmp_edges[j]:
                                 if k not in edges[j]:
                                     edges[j].append(k)
-                    
+
                     if cnt == length - 1:
                         end = tmp_end
                     else:
@@ -252,7 +252,7 @@ class DDL(object):
         else:
             log_err(self, 'invalid graph')
         return (edges, start, end)
-    
+
     def _check_edge(self, graph):
         e = {}
         for i in graph:
@@ -265,7 +265,7 @@ class DDL(object):
                 else:
                     e.update({j:edges[j]})
         return e
-    
+
     def parse(self, graph_file):
         try:
             graph = self._load_graph(graph_file)

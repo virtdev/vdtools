@@ -9,7 +9,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', dest='uid', default=None)
     parser.add_argument('-s', dest='src', default=None)
     parser.add_argument('-d', dest='dest', default=None)
-    
+
     args = parser.parse_args(sys.argv[1:])
     uid = args.uid
     src = args.src
@@ -17,10 +17,10 @@ if __name__ == '__main__':
     if not src or not dest:
         parser.print_help()
         sys.exit()
-    
+
     if uid:
         ret = link(src, dest, uid=uid)
     else:
         ret = link(src, dest)
-    
+
     print(str(ret))

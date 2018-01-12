@@ -18,7 +18,7 @@ CASCADE = '/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml'
 class FaceRec(Driver):
     def setup(self):
         self._cascade = cv2.CascadeClassifier(CASCADE)
-    
+
     def _recognize(self, image):
         try:
             buf = b64decode(image)
@@ -38,7 +38,7 @@ class FaceRec(Driver):
         except:
             if PRINT:
                 print('FaceRec: failed to recognize')
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         image = kwargs.get('content')

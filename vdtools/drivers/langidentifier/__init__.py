@@ -19,7 +19,7 @@ class LangIdentifiyer(Driver):
             if PRINT:
                 print('LangIdentifier: lang=%s' % lang)
             return lang
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         text = kwargs.get('content')

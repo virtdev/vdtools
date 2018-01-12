@@ -42,36 +42,36 @@ class Core(object):
         self._inspector = Thread(target=self._start_inspector)
         self._dispatcher = Dispatcher(self._uid, manager.channel, self)
         self._inspector.start()
-    
+
     def _log(self, text):
         if LOG_CORE:
             log_debug(self, text)
-    
+
     def _can_put(self, dest, src, flags):
         if flags & MODE_REFLECT:
             return True
         else:
             return not self._members[dest] or self._members[dest].has_key(src)
-    
+
     def _check_paths(self, name):
         if not self._dispatcher.has_edge(name):
             edges = get_devices(self._uid, name, FIELD_EDGE)
             self._dispatcher.update_edges(name, edges)
-    
+
     def _check_members(self, name):
         if not self._members.has_key(name):
             self._members[name] = {}
             members = get_devices(self._uid, name, FIELD_VRTX)
             for i in members:
                 self._members[name][i] = []
-    
+
     def _count(self, name):
         cnt = 0
         for i in self._members[name]:
             if len(self._members[name][i]) > 0:
                 cnt += 1
         return cnt
-    
+
     def _check_timeout(self, name):
         if not self._members[name]:
             return
@@ -94,7 +94,7 @@ class Core(object):
             t = datetime.utcnow()
             if (t - t_min).total_seconds() >= timeout:
                 return True
-    
+
     def _inspect(self, name):
         try:
             if self._check_timeout(name):
@@ -107,20 +107,20 @@ class Core(object):
                         self.dispatch(name, res)
         except:
             log_err(self, 'failed to inspect, name=%s' % str(name))
-    
+
     def _start_inspector(self):
         while True:
             time.sleep(INSP_INTV)
             for name in self._members:
                 self._inspect(name)
-    
+
     def _is_ready(self, dest, src, flags):
         if flags & MODE_REFLECT or not self._members[dest]:
             return True
         elif self._members[dest].has_key(src) and not len(self._members[dest][src]):
             if self._count(dest) + 1 == len(self._members[dest]):
                 return True
-    
+
     def _get_event(self, dest, src):
         if not self._events.has_key(dest):
             self._events[dest] = {}
@@ -132,13 +132,13 @@ class Core(object):
             self._events[dest][src][1] += 1
         ev.clear()
         return ev
-    
+
     def _set_event(self, dest, src):
         if self._events.has_key(dest):
             if self._events[dest].has_key(src):
                 ev = self._events[dest][src][0]
                 ev.set()
-    
+
     def _put_event(self, dest, src):
         if self._events.has_key(dest):
             if self._events[dest].has_key(src):
@@ -152,53 +152,53 @@ class Core(object):
                     raise Exception(log_get(self, 'failed to put event'))
             if not self._events[dest]:
                 del self._events[dest]
-    
+
     @named_lock
     def _remove_edge(self, name, edge):
         self._dispatcher.remove_edge(edge)
-    
+
     def remove_edge(self, edge):
         name = edge[0]
         self._remove_edge(name, edge)
-    
+
     @named_lock
     def remove_handler(self, name):
         self._handler.remove(name)
-    
+
     @named_lock
     def remove_filter(self, name):
         self._filter.remove(name)
-    
+
     @named_lock
     def remove_dispatcher(self, name):
         self._dispatcher.remove(name)
-    
+
     @named_lock
     def remove_mode(self, name):
         self._mode.remove(name)
-    
+
     @named_lock
     def remove_freq(self, name):
         self._freq.remove(name)
-    
+
     @named_lock
     def remove_timeout(self, name):
         self._timeout.remove(name)
-    
+
     @named_lock
     def _add_edge(self, name, edge):
         self._dispatcher.add_edge(edge)
-    
+
     def add_edge(self, edge):
         name = edge[0]
         self._add_edge(name, edge)
-    
+
     def get_mode(self, name):
         return self._mode.get(name)
-    
+
     def get_freq(self, name):
         return self._freq.get(name)
-    
+
     def _remove(self, name):
         if not self._members.has_key(name):
             return
@@ -206,7 +206,7 @@ class Core(object):
             for i in self._events[name]:
                 self._events[name][i].set()
         del self._members[name]
-    
+
     @named_lock
     def remove(self, name):
         self._dispatcher.remove_edges(name)
@@ -217,7 +217,7 @@ class Core(object):
         self.remove_freq(name)
         self.remove_mode(name)
         self._remove(name)
-    
+
     @named_lock
     def dispatch(self, name, buf):
         self._check_paths(name)
@@ -229,7 +229,7 @@ class Core(object):
             if blocks and type(blocks) == list:
                 self._dispatcher.send_blocks(name, blocks)
                 self._log('dispatch blocks, name=%s' % name)
-    
+
     def _get_op(self, buf, mode):
         if type(buf) != dict:
             return
@@ -251,7 +251,7 @@ class Core(object):
             return OP_PUT
         elif mode & MODE_OUT:
             return OP_GET
-    
+
     def _handle(self, name, buf):
         mode = self._mode.get(name)
         if not mode & MODE_VIRT:
@@ -266,13 +266,13 @@ class Core(object):
                     return ret
         else:
             return buf
-    
+
     def has_handler(self, name):
         return self._handler.check(name)
-    
+
     def handle(self, name, buf):
         return self._handler.put(name, buf)
-    
+
     def _proc(self, name, buf):
         try:
             if not self.has_handler(name):
@@ -281,7 +281,7 @@ class Core(object):
                 return self.handle(name, buf)
         except:
             log_err(self, 'failed to process, name=%s' % name)
-    
+
     def _get_args(self, dest, src, buf, flags):
         try:
             args = {}
@@ -295,7 +295,7 @@ class Core(object):
             return args
         except:
             log_err(self, 'failed to get args, dest=%s, src=%s' % (dest, src))
-    
+
     def _pop_args(self, name):
         try:
             args = {}
@@ -307,7 +307,7 @@ class Core(object):
             return args
         except:
             log_err(self, 'failed to pop args, name=%s' % name)
-    
+
     def _check_list(self, dest, src):
         while len(self._members[dest][src]) >= LIST_SIZE:
             ev = self._get_event(dest, src)
@@ -317,7 +317,7 @@ class Core(object):
             finally:
                 self._lock.acquire(dest)
             self._put_event(dest, src)
-    
+
     def _try_put(self, dest, src, buf, flags):
         try:
             args = None
@@ -341,7 +341,7 @@ class Core(object):
                     return ret
         except:
             log_err(self, 'failed to put, dest=%s, src=%s' % (dest, src))
-    
+
     def put(self, dest, src, buf, flags):
         if not buf:
             self._log('put, no content, dest=%s, src=%s' % (dest, src))
@@ -367,7 +367,7 @@ class Core(object):
                 self._dispatcher.sendto(src, dest, res, hidden=True, flags=flags)
             self._log('put, dest=%s, src=%s' % (src, dest))
         return True
-    
+
     def save(self, name, buf):
         save_device(self._manager, name, buf)
         self._log('save, name=%s' % name)

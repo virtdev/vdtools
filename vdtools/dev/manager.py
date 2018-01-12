@@ -20,38 +20,38 @@ class Manager(object):
         self._filter.start()
         self._handler.start()
         self._dispatcher.start()
-    
+
     def _init_dev(self):
         self.devices = []
         self._lo = Lo(self.uid, self.core)
         self.devices.append(self._lo)
-    
+
     def _init_core(self):
         self.core = Core(self)
-    
+
     def _initialize(self):
         self._init_proc()
         self._init_core()
         self._init_dev()
-    
+
     def __init__(self):
         self.uid = UID
         self.channel = None
         self._active = False
         self._initialize()
-    
+
     def _start(self):
         for device in self.devices:
             device.start()
-    
+
     def start(self):
         if not self._active:
             Thread(target=self._start).start()
             self._active = True
-    
+
     def create(self, device, init):
         return self._lo.create(device, init)
-    
+
     @property
     def compute_unit(self):
         pass

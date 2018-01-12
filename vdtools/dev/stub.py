@@ -20,7 +20,7 @@ class Stub(object):
         self._index = None
         if LOG_STUB:
             self._log_cnt = 0
-    
+
     def _log(self, cmd):
         if LOG_STUB:
             if cmd == CMD_OPEN:
@@ -36,19 +36,19 @@ class Stub(object):
             text += ', driver=%s, name=%s [%d]' % (str(self._driver), self._driver.get_name(), self._log_cnt)
             log_debug(self, text)
             self._log_cnt += 1
-    
+
     def _get(self):
         req = io.get(self._socket, local=True)
         self._index, cmd, buf = parse(req)
         self._driver.set_index(self._index)
         return (cmd, buf)
-    
+
     def _put(self, buf, index=True):
         if index:
             io.put(self._socket, {self._index:buf}, local=True)
         else:
             io.put(self._socket, buf, local=True)
-    
+
     def _create(self, cmd, buf):
         try:
             if cmd == CMD_MOUNT:
@@ -57,18 +57,18 @@ class Stub(object):
                 self._active = True
         except:
             log_err(self, 'failed to create, driver=%s, cmd=%s' % (str(self._driver), str(cmd)))
-    
+
     def _check_args(self, buf):
         try:
             buf = ast.literal_eval(buf)
         except:
             log_err(self, 'invalid arguments')
             return (None, None)
-        
+
         if type(buf) != dict:
             log_err(self, 'invalid arguments')
             return (None, None)
-        
+
         args = buf.get('args')
         kwargs = buf.get('kwargs')
         if args != None and type(args) == list and kwargs != None and type(kwargs) == dict:
@@ -76,7 +76,7 @@ class Stub(object):
         else:
             log_err(self, 'invalid arguments')
             return (None, None)
-    
+
     def _proc(self, cmd, buf):
         result = ''
         force = False
@@ -98,21 +98,21 @@ class Stub(object):
                     result = ret
         else:
             log_err(self, 'failed to process, invalid command, driver=%s, cmd=%s' % (str(self._driver), str(cmd)))
-        
+
         if result or force:
             if result:
                 self._log(cmd=cmd)
             self._put(result)
-    
+
     def _proc_safe(self, cmd, buf):
         try:
             self._proc(cmd, buf)
         except:
             log_err(self, 'failed to process, driver=%s, cmd=%s' % (str(self._driver), str(cmd)))
-    
+
     def start(self):
         try:
-            while True:            
+            while True:
                 cmd, buf = self._get()
                 if self._active:
                     if DEBUG:

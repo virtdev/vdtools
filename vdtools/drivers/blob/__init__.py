@@ -22,7 +22,7 @@ class Blob(Driver):
             return (polarity,  subjectivity)
         else:
             return (None, None)
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         text = kwargs.get('content')

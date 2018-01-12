@@ -16,14 +16,14 @@ class Attr(object):
     def _get_path(self, uid, name):
         path = get_var_path(uid)
         return str(os.path.join(path, ATTR, name))
-    
+
     def create(self, uid, name):
         path = self._get_path(uid, name)
         return os.open(path, os.O_RDWR | os.O_CREAT, 0o644)
-    
+
     def _release(self, uid, name, fh, force=False):
         os.close(fh)
-    
+
     def _init_attr(self, uid, name, attr, val):
         name = os.path.join(name, attr)
         f = self.create(uid, name)
@@ -31,7 +31,7 @@ class Attr(object):
             os.write(f, str(val))
         finally:
             self._release(uid, name, f, force=True)
-    
+
     def initialize(self, uid, name, attr, val):
         if attr not in ATTRIBUTES:
             log_err(self, 'invalid attribute %s' % str(attr))

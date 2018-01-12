@@ -20,15 +20,15 @@ class TimeRecorder(Driver):
         path = self._get_path()
         os.system('mkdir -p %s' % path)
         self._cnt = {}
-    
+
     def _get_timer_path(self, timer, name):
         path = os.path.join(HOME_TIMER, timer, name)
         return readlink(path)
-    
+
     def _get_path(self, name=''):
         path = os.path.join(HOME_RECORDER, self.get_name(), name)
         return readlink(path)
-    
+
     def _save(self, timer, name):
         t_end = datetime.utcnow()
         path = self._get_timer_path(timer, name)
@@ -49,7 +49,7 @@ class TimeRecorder(Driver):
         if PRINT:
             print('TimeRecorder: name=%s, time=%f' % (name, t))
         return t
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         name = kwargs.get('name')
@@ -59,12 +59,11 @@ class TimeRecorder(Driver):
                 cnt = 0
             else:
                 cnt = self._cnt.get(name)
-            
+
             if cnt < INTERVAL:
                 cnt += 1
                 self._cnt.update({name:cnt})
-                if cnt == INTERVAL: 
+                if cnt == INTERVAL:
                     t = self._save(timer, name)
                     if t:
                         return {'name':name, 'time':t}
-

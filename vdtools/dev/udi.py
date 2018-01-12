@@ -19,7 +19,7 @@ from vdtools.lib.modes import MODE_CLONE, MODE_VIRT
 PAIR_INTERVAL = 7 # seconds
 SCAN_INTERVAL = 7 # seconds
 MOUNT_TIMEOUT = 30 # seconds
-            
+
 class UDI(object):
     def __init__(self, uid, core):
         self._thread = None
@@ -28,48 +28,48 @@ class UDI(object):
         self._core = core
         self._uid = uid
         self.setup()
-    
+
     def setup(self):
         pass
-    
+
     def scan(self):
         pass
-    
+
     def connect(self, device):
         pass
-    
+
     def get_uid(self):
         return self._uid
-    
+
     def get_name(self, parent, child=None):
         return get_name(self._uid, parent, child)
-    
+
     def get_mode(self, device):
         return 0
-    
+
     def _create_device(self, info, local, index=None):
         if not info.has_key('type'):
             log_err(self, 'failed to create device')
             raise Exception(log_get(self, 'failed to create device'))
-        
+
         device = UDO(local=local)
         if index != None:
             device.set_index(int(index))
-        
+
         device.set_type(str(info['type']))
-        
+
         if info.get('freq'):
             device.set_freq(float(info['freq']))
-        
+
         if info.get('mode'):
             mode = int(info['mode'])
             device.set_mode(mode)
-        
+
         if info.get('spec'):
             device.set_spec(dict(info['spec']))
-        
+
         return device
-    
+
     def _get_children(self, parent, info, local):
         devices = {}
         try:
@@ -83,13 +83,13 @@ class UDI(object):
         for i in devices:
             devices[i].mount(self._uid, i, self._core)
         return devices
-    
+
     def _get_info(self, sock, local):
         io.put(sock, cmd_mount(), local=local)
         buf = io.get(sock, local=local)
         if buf:
             return device_info(buf)
-    
+
     def _mount(self, sock, local, device, init):
         info = self._get_info(sock, local)
         if not info:
@@ -117,7 +117,7 @@ class UDI(object):
         parent.mount(self._uid, name, self._core, sock=sock, init=init)
         self._devices.update({name:parent})
         return name
-    
+
     def _proc(self, target, args, timeout):
         pool = ThreadPool(processes=1)
         result = pool.apply_async(target, args=args)
@@ -126,7 +126,7 @@ class UDI(object):
             return result.get(timeout=timeout)
         finally:
             pool.join()
-    
+
     def _create(self, device, init=True):
         try:
             sock, local = self._proc(self.connect, (device,), PAIR_INTERVAL)
@@ -142,16 +142,16 @@ class UDI(object):
                 if mode & MODE_CLONE or mode & MODE_VIRT:
                     sock.close()
                 return name
-    
+
     def create(self, device, init=True):
         return self._create(device, init)
-    
+
     def find(self, name):
         devices = copy.copy(self._devices)
         for i in devices:
             if devices[i].find(name):
                 return devices[i]
-    
+
     def _start(self):
         while True:
             devices = self.scan()
@@ -159,7 +159,7 @@ class UDI(object):
                 for device in devices:
                     self._create(device)
             time.sleep(SCAN_INTERVAL)
-    
+
     def start(self):
         self._thread = Thread(target=self._start)
         self._thread.start()

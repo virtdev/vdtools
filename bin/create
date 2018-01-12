@@ -9,7 +9,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', dest='uid', default=None)
     parser.add_argument('-p', dest='parent', default=None)
     parser.add_argument('-t', dest='device_type', default=None)
-    
+
     args = parser.parse_args(sys.argv[1:])
     uid = args.uid
     parent = args.parent
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     if not device_type:
         parser.print_help()
         sys.exit()
-    
+
     if uid:
         if parent:
             ret = create(device_type, uid=uid, parent=parent)
@@ -25,5 +25,5 @@ if __name__ == '__main__':
             ret = create(device_type, uid=uid)
     else:
         ret = create(device_type)
-    
+
     print(str(ret))

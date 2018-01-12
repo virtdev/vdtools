@@ -25,23 +25,23 @@ class Queue(object):
         self.__index = None
         self.__queue = []
         self.__thread.start()
-    
+
     def __log(self, text):
         if LOG_QUEUE:
             log_debug(self, text)
-    
+
     def set_index(self, index):
         self.__index = index
-    
+
     def set_parent(self, parent):
         self.__parent = parent
-    
+
     def get_parent(self):
         return self.__parent
-    
+
     def proc(self, buf):
         pass
-    
+
     def insert(self, buf):
         self.__lock.acquire()
         try:
@@ -50,7 +50,7 @@ class Queue(object):
             return True
         finally:
             self.__lock.release()
-    
+
     def push(self, buf):
         self.__lock.acquire()
         try:
@@ -60,19 +60,19 @@ class Queue(object):
                 return True
         finally:
             self.__lock.release()
-    
+
     @property
     def index(self):
         return self.__index
-    
+
     @property
     def length(self):
         return len(self.__queue)
-    
+
     @property
     def capacity(self):
         return self.__capacity
-    
+
     def __pop(self):
         self.__lock.acquire()
         try:
@@ -87,7 +87,7 @@ class Queue(object):
                     return buf
         finally:
             self.__lock.release()
-    
+
     def __proc(self, buf):
         pool = ThreadPool(processes=1)
         result = pool.apply_async(self.proc, args=(buf,))
@@ -96,16 +96,16 @@ class Queue(object):
             result.get(timeout=self.__timeout)
         finally:
             pool.join()
-    
+
     def __proc_safe(self, buf):
         try:
             self.__proc(buf)
         except:
             log_err(self, 'failed to process')
-    
+
     def __wait(self):
         self.__event.wait(WAIT_TIME)
-    
+
     def __run(self):
         while True:
             self.__wait()

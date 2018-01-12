@@ -6,23 +6,23 @@ import argparse
 from vdtools.installer import install
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-u', dest='uid', default=None)
-    parser.add_argument('-d', dest='dir', default=None)
-    
-    args = parser.parse_args(sys.argv[1:])
-    uid = args.uid
-    dir = args.dir
-    if not dir:
-        parser.print_help()
-        sys.exit()
-    
-    files = {}
-    for name in os.listdir(dir):
-        path = os.path.join(dir, name)
-        with open(path) as f:
-            buf = f.read()
-        files.update({name:buf})
-    
-    ret = install(uid, files)
-    print(str(ret))
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-u', dest='uid', default=None)
+        parser.add_argument('-d', dest='dir', default=None)
+
+        args = parser.parse_args(sys.argv[1:])
+        uid = args.uid
+        dir = args.dir
+        if not dir:
+                parser.print_help()
+                sys.exit()
+
+        files = {}
+        for name in os.listdir(dir):
+                path = os.path.join(dir, name)
+                with open(path) as f:
+                        buf = f.read()
+                files.update({name:buf})
+
+        ret = install(uid, files)
+        print(str(ret))

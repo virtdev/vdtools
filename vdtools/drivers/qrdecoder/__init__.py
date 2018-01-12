@@ -12,7 +12,7 @@ from vdtools.dev.driver import Driver, wrapper
 
 PRINT = False
 
-class QRDecoder(Driver):    
+class QRDecoder(Driver):
     def _decode(self, image):
         buf = b64decode(image)
         if buf:
@@ -30,7 +30,7 @@ class QRDecoder(Driver):
                     if PRINT:
                         print('QRDecoder: url=%s' % url)
                     return url
-    
+
     @wrapper
     def put(self, *args, **kwargs):
             image = kwargs.get('content')

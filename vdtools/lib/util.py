@@ -10,7 +10,7 @@ import sys
 import ast
 import uuid
 import getpass
-import commands
+import subprocess
 import collections
 from vdtools.conf.user import UID
 from vdtools.conf.env import PATH_VAR
@@ -23,7 +23,7 @@ DIR_MODE = 0o755
 FILE_MODE = 0o644
 INFO = ['mode', 'type', 'freq', 'range']
 
-_bin = commands.getoutput('readlink -f %s' % sys.argv[0])
+_bin = subprocess.check_output(['readlink', '-f', sys.argv[0]])
 _path = os.path.dirname(_bin)
 _dir = os.path.dirname(_path)
 sys.path.append(_dir)
@@ -37,10 +37,10 @@ def get_cmd(op, args):
 
 def readlink(path):
     if path.startswith('..'):
-        home = commands.getoutput('readlink -f ..')
+        home = subprocess.check_output(['readlink', '-f', '..'])
         path = path[2:]
     elif path.startswith('.'):
-        home = commands.getoutput('readlink -f %s' % path[0])
+        home = subprocess.check_output(['readlink', '-f', path[0]])
         path = path[1:]
     elif path.startswith('~'):
         user = getpass.getuser()
@@ -54,14 +54,14 @@ def readlink(path):
             return os.path.join(get_dir(), path)
         else:
             return path
-    
+
     if not path.startswith('/'):
         raise Exception('Error: failed to read link')
-    
+
     path = path[1:]
     if path.startswith('.') or path.startswith('/'):
         raise Exception('Error: failed to read link')
-    
+
     return os.path.join(home, path)
 
 def get_var_path(uid=None, name=None):
@@ -186,7 +186,7 @@ def create_server(addr, port, handler):
     server.server_bind()
     server.server_activate()
     server.serve_forever()
-    
+
 def mkdir(path):
     os.system('mkdir -p %s' % path)
 
@@ -198,3 +198,13 @@ def check_uuid(identity):
         return uuid.UUID(identity).hex
     except:
         pass
+
+def _touch(path):
+    fd = os.open(path, os.O_CREAT)
+    os.close(fd)
+
+def touch(path):
+    try:
+        _touch(path)
+    except:
+        _touch(path)

@@ -22,14 +22,14 @@ pygame.camera.init()
 class Camera(Driver):
     def __init__(self, name=None):
         Driver.__init__(self, name=name, mode=MODE_OVP | MODE_SYNC, spec={'content':{'type':'image/jpeg;base64'}})
-    
+
     def setup(self):
         cameras = camera.list_cameras()
         if CAMERA_INDEX >= len(cameras):
             raise Exception('Error: no camera')
         self._cam = camera.Camera(cameras[CAMERA_INDEX], (CAMERA_WIDTH, CAMERA_HEIGHT))
         self._cam.start()
-    
+
     def get(self):
         res = StringIO()
         surf = self._cam.get_image()

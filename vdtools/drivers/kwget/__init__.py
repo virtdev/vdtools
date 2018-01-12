@@ -16,14 +16,14 @@ class KWGet(Driver):
     def setup(self):
         path = os.path.join(os.path.dirname(__file__), STOPWORDS)
         self._rake = Rake(path)
-    
+
     def _get_keywords(self, text):
         buf = b64decode(text)
         keywords = self._rake.run(buf)
         if PRINT:
             print('KWGet: keywords=%s' % str(keywords))
         return keywords
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         text = kwargs.get('content')

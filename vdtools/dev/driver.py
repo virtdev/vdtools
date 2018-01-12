@@ -52,53 +52,53 @@ class Driver(object):
                 self.__freq = FREQ_MAX
             if freq < FREQ_MIN:
                 self.__freq = FREQ_MIN
-    
+
     def __str__(self):
         return self.__class__.__name__
-    
+
     def setup(self):
         pass
-    
+
     def open(self):
         pass
-    
+
     def close(self):
         pass
-    
+
     def get(self):
         pass
-    
+
     def put(self, *args, **kwargs):
         pass
-    
+
     def set_index(self, index):
         self.__index = index
-    
+
     def get_type(self):
         return str(self)
-    
+
     def get_index(self):
         return self.__index
-    
+
     def get_profile(self):
         profile = {'type':self.get_type()}
         spec = self.get_spec()
         if spec:
             profile.update({'spec':spec})
         return profile
-    
+
     def get_freq(self):
         return self.__freq
-    
+
     def get_spec(self):
         return self.__spec
-    
+
     def get_mode(self):
         return self.__mode
-    
+
     def get_name(self):
         return self.__name
-    
+
     def get_info(self):
         info = {'type':self.get_type(), 'mode':self.get_mode()}
         freq = self.get_freq()

@@ -15,16 +15,16 @@ class PoolEvent(object):
     def __init__(self):
         self._lock = Lock()
         self._event = Event()
-    
+
     @lock
     def _clear(self):
         if self._event.is_set():
             self._event.clear()
-    
+
     @lock
     def set(self):
         self._event.set()
-    
+
     def wait(self, timeout):
         self._event.wait(timeout)
         self._clear()
@@ -35,7 +35,7 @@ class Pool(object):
         self.__queues = []
         self.__lock = Lock()
         self.__event = PoolEvent()
-    
+
     def __find(self):
         self.__lock.acquire()
         try:
@@ -62,25 +62,25 @@ class Pool(object):
                 return self.__queues[n]
         finally:
             self.__lock.release()
-    
+
     def wait(self, timeout=TIMEOUT):
         self.__event.wait(timeout)
-    
+
     def wakeup(self):
         self.__event.set()
-    
+
     def get(self, index):
         if index >= self.__count:
             return
         else:
             return self.__queues[index]
-    
+
     def add(self, queue):
         queue.set_parent(self)
         queue.set_index(self.__count)
         self.__queues.append(queue)
         self.__count += 1
-    
+
     def push(self, buf):
         while True:
             que = self.__find()

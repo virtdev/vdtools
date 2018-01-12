@@ -18,14 +18,14 @@ class Timer(Driver):
     def _get_dir(self):
         path = os.path.join(HOME, self.get_name())
         return readlink(path)
-    
+
     def _get_path(self, name):
         return os.path.join(self._get_dir(), name)
-    
+
     def setup(self):
         path = self._get_dir()
         os.system('mkdir -p %s' % path)
-    
+
     def _save(self, name):
         t = str(datetime.utcnow())
         path = self._get_path(name)
@@ -38,7 +38,7 @@ class Timer(Driver):
             if PRINT:
                 print('Timer: name=%s, time=%s' % (name, t))
         return True
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         name = kwargs.get('name')
@@ -47,4 +47,3 @@ class Timer(Driver):
                 output = copy(kwargs)
                 output.update({'timer':self.get_name()})
                 return output
-

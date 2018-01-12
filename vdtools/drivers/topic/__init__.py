@@ -34,7 +34,7 @@ class Topic(Driver):
             if PRINT:
                 print('Topic: topics=%s' % topics)
             return topics
-    
+
     @wrapper
     def put(self, *args, **kwargs):
         text = kwargs.get('content')

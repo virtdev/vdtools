@@ -11,23 +11,23 @@ from vdtools.lib.loader import Loader
 from vdtools.lib.attributes import ATTR_HANDLER
 from vdtools.conf.defaults import PROC_ADDR, HANDLER_PORT
 
-class Handler(object):  
+class Handler(object):
     def __init__(self, uid, addr=PROC_ADDR):
         self._handlers = {}
         self._loader = Loader(uid)
         self._addr = addr
-    
+
     def _get_code(self, name):
         buf = self._handlers.get(name)
         if not buf:
             buf = self._loader.get_attr(name, ATTR_HANDLER, str)
             self._handlers.update({name:buf})
         return buf
-    
+
     def remove(self, name):
         if self._handlers.has_key(name):
             del self._handlers[name]
-    
+
     def check(self, name):
         if self._handlers.get(name):
             return True
@@ -36,7 +36,7 @@ class Handler(object):
             if buf:
                 self._handlers.update({name:buf})
                 return True
-    
+
     def put(self, name, buf):
         try:
             code = self._get_code(name)

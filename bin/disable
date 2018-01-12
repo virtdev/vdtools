@@ -8,14 +8,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', dest='device', default=None)
     parser.add_argument('-u', dest='uid', default=None)
-    
+
     args = parser.parse_args(sys.argv[1:])
     device = args.device
     uid = args.uid
     if not device:
         parser.print_help()
         sys.exit()
-    
+
     if uid:
         disable(device, uid=uid)
     else:

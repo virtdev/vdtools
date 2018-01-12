@@ -6,9 +6,13 @@
 #
 
 import os
+import time
 import xattr
 from operations import *
-from util import get_cmd, readlink
+from util import get_cmd, readlink, touch
+
+RETRY_MAX = 3
+RETRY_INTERVAL = 5 # seconds
 
 def check_path(func):
     def _check_path(*args, **kwargs):
@@ -18,7 +22,17 @@ def check_path(func):
 
 @check_path
 def api_touch(path):
-    os.system('touch %s' % path)
+    cnt = RETRY_MAX
+    while cnt >= 0:
+        try:
+            touch(path)
+            return
+        except:
+            pass
+        cnt -= 1
+        if cnt >= 0:
+            time.sleep(RETRY_INTERVAL)
+    raise Exception('failed to touch %s' % str(path))
 
 @check_path
 def api_enable(path):

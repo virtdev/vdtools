@@ -18,7 +18,7 @@ _manager = None
 def put(addr, port, code, args):
     if not code or type(args) != dict:
         raise Exception('Error: cannot process')
-    
+
     sock = io.connect(addr, port)
     try:
         buf = bson.dumps({'code':code, 'args':args})
@@ -91,6 +91,6 @@ class Proc(object):
             _manager = manager
         self._addr = addr
         self._port = port
-    
+
     def start(self):
         Thread(target=create_server, args=(self._addr, self._port, ProcServer)).start()

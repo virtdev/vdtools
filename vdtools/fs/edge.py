@@ -16,7 +16,7 @@ class Edge(object):
             return str(os.path.join(path, EDGE, edge[0], edge[1]))
         else:
             return str(os.path.join(path, EDGE, edge[0], '.' + edge[1]))
-    
+
     def initialize(self, uid, edge, hidden=False):
         path = self._get_path(uid, edge, hidden)
         if not os.path.exists(path):

@@ -13,5 +13,8 @@ The tools are contained in the following path:
 The configuration files are contained in the following path:
 * path/to/vdtools/vdtools/conf
 
+# Version
+Stable version: 0.0.1
+
 # License
 Vdtools is released under the terms of the MIT License.

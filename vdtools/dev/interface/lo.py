@@ -77,21 +77,21 @@ class LoServer(BaseRequestHandler):
 class Lo(UDI):
     def get_name(self, device, child=None):
         return _get_name(device)
-    
+
     def get_mode(self, device):
         return _get_mode(device)
-    
+
     def setup(self):
         self._active = False
         self._loader = Loader(self.get_uid())
         Thread(target=create_server, args=(LO_ADDR, LO_PORT, LoServer)).start()
-    
+
     def _get_device(self, name):
         mode = self._core.get_mode(name)
         prof = self._loader.get_profile(name)
         if prof:
             return device_name(prof['type'], name, mode)
-    
+
     def scan(self):
         device_list = []
         if not self._active:
@@ -103,10 +103,10 @@ class Lo(UDI):
                     if device and device not in _devices:
                         device_list.append(device)
         return device_list
-    
+
     def connect(self, device):
         return (connect(device), True)
-    
+
     @property
     def compute_unit(self):
         if not _devices:
