@@ -45,7 +45,6 @@ install:
   - sudo python setup.py install
 
 before_script:
-  - sleep 5
   - sudo bin/simulator &
   - sleep 5
 
