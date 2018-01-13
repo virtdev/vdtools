@@ -4,41 +4,13 @@ python:
   - 2.7
 
 before_install:
-  - sudo apt-get install -y build-essential
-  - sudo apt-get install -y libopencv-dev
-  - sudo apt-get install -y libsqlite3-dev
-  - sudo apt-get install -y libzbar-dev
-  - sudo apt-get install -y python-all-dev
-  - sudo apt-get install -y python-cffi
-  - sudo apt-get install -y python-dbus
-  - sudo apt-get install -y python-gevent
-  - sudo apt-get install -y python-gi-dev
-  - sudo apt-get install -y python-imaging
-  - sudo apt-get install -y python-numpy
-  - sudo apt-get install -y python-opencv
-  - sudo apt-get install -y python-pil
-  - sudo apt-get install -y python-pip
-  - sudo apt-get install -y python-pygame
-  - sudo apt-get install -y python-zbar
   - sudo pip install pip --upgrade
-  - sudo pip install zerorpc
-  - sudo pip install gensim
   - sudo pip install hash_ring
   - sudo pip install html2text
   - sudo pip install isodate
-  - sudo pip install langid
-  - sudo pip install -U nltk
   - sudo pip install psutil
-  - sudo pip install pycrypto
-  - sudo pip install pypng
-  - sudo pip install pyqrcode
-  - sudo pip install pysqlite
-  - sudo pip install python-rake
-  - sudo pip install pytz
   - sudo pip install RestrictedPython
-  - sudo pip install stop-words
   - sudo pip install textblob
-  - sudo pip install wget
   - sudo pip install xattr
 
 install:
